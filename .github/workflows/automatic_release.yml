@@ -1,0 +1,25 @@
+name: Create Tag
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Generate tag based on package.json version
+      uses: Klemensas/action-autotag@stable
+      id: create_tag
+      with:
+        GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+
+    - name: Create new release with tag created before
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "${{ steps.create_tag.outputs.tagname }}"
+        prerelease: false
