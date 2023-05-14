@@ -5,11 +5,11 @@
   "main": "index.js",
   "scripts": {
     "doc": "redoc-cli bundle -o ./sources/documentation/Microservice_Documentation.html ./sources/documentation/BookMicroservice.json",
-    "build": "mkdirp ./sources/main/generated && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && npx tsc",
+    "build": "mkdirp ./sources/main/generated && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./AccessCommunication ./AccessCommunication/*.proto && npx tsc",
     "start": "node sources/build/main/index.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q sources/build/main/index.js\"",
-    "test": "protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && jest",
-    "coverage": "protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && jest --coverage"
+    "test": "protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./AccessCommunication ./AccessCommunication/*.proto && jest",
+    "coverage": "protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./AccessCommunication ./AccessCommunication/*.proto && jest --coverage"
   },
   "author": "",
   "license": "ISC",

@@ -1,4 +1,5 @@
 import sql, { config } from 'mssql';
+import { Lesson } from './interfaces/Lesson';
 
 const conf: config = {
     user: 'intelligentSystem', // better stored in an app setting such as process.env.DB_USER
@@ -11,21 +12,134 @@ const conf: config = {
     }
 }
 
-export async function EXAMPLE(email: String){
+export async function verify_CalendarExists_DATA(Anno_Scolastico: string, Istituto: number, Classe: string): Promise<boolean> {
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select * from Utente where Email = '" + email + "'"); //execute the query
+                                        .query("select * from Calendario where Anno_Scolastico = '" + Anno_Scolastico + "' AND Istituto = " + Istituto + " AND Classe = '" + Classe + "'"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
-        if(resultSet.rowsAffected[0] == 0)
-            return 0;
+        return resultSet.rowsAffected[0] > 0;
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return true;
+}
 
-        var data: any;
+export async function verify_CalendarExists_ID(ID: number): Promise<boolean> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Calendario where ID=" + ID); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        return resultSet.rowsAffected[0] > 0;
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return true;
+}
+
+export async function verify_MateriaExists(ID: number): Promise<boolean> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Materia where ID=" + ID); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        return resultSet.rowsAffected[0] > 0;
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return true;
+}
+
+
+
+
+
+
+
+
+export async function create_Calendar(Anno_Scolastico: string, Istituto: number, Classe: string): Promise<boolean> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("Insert into Calendario values ('" + Anno_Scolastico + "'," + Istituto + ",'" + Classe + "')"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        return resultSet.rowsAffected[0] > 0;
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return true;
+}
+
+export async function create_Lesson(lesson: Lesson): Promise<boolean> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("Insert into Lezione values (" + lesson.ID_Calendario + ",'" + lesson.Nome_lezione + "'," + lesson.Materia + ",'" + lesson.Professore + "'," + lesson.Ora_inizio + "," + lesson.Ora_fine + ")"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        return resultSet.rowsAffected[0] > 0;
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return false;
+}
+
+
+
+
+
+
+
+
+export async function get_Calendar_ID(Anno_Scolastico: string, Istituto: number, Classe: string): Promise<number> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select ID from Calendario where Anno_Scolastico = '" + Anno_Scolastico + "' AND Istituto = " + Istituto + " AND Classe = '" + Classe + "'"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
-            data = row;
+            return row.ID
         });
     } catch (e: any) /* istanbul ignore next */ {
         console.error(e);
     }
+    return -1;
+}
+
+export async function get_Calendar_Info(ID: number): Promise<object> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Calendario where ID = " + ID); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            return row
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return {};
+}
+
+export async function get_Materia(ID: number): Promise<object> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Materia where ID = " + ID); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            return row
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return {};
 }

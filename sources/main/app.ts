@@ -11,7 +11,7 @@ app.get('/', async (req: Request, res: Response) => {
   	res.send('Access control microservice');
 });
 
-import loginRouter from './routes/Create';
-app.use('/login', loginRouter)
+import createRouter from './routes/Create';
+app.use('/create', createRouter)
 
 export = app;
