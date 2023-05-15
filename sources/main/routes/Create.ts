@@ -47,6 +47,10 @@ router.put('/lesson', async (req: {body: proto.Lesson}, res) => {
     }
 
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body)
+	if(!Lesson.isAssigned(lesson)) {
+        res.status(400).send(new proto.BasicMessage({message: "Verify that all the values of the lessons are inserted."}).toObject())
+        return;
+	}
 
 	if(!await queryAsk.verify_CalendarExists_ID(lesson.ID_Calendario)) {
         res.status(400).send(new proto.BasicMessage({message: "The ID of the calendar passed does not exists."}).toObject())
@@ -62,6 +66,30 @@ router.put('/lesson', async (req: {body: proto.Lesson}, res) => {
         res.status(200).send(new proto.BasicMessage({message: "Lesson created successfully"}).toObject())
         return;
 	}
+
+	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+});
+
+router.post('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for adding a book to a lesson."}).toObject())
+        return;
+    }
+
+	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
+	if(!Lesson.isAssigned(lesson)) {
+        res.status(400).send(new proto.BasicMessage({message: "Verify that all the values of the lessons are inserted."}).toObject())
+        return;
+	}
+
+	const lessonID: number = await queryAsk.get_LessonID(Lesson.assignVals_JSON(req.body.lesson))
+
+	if(await queryAsk.create_BookForLesson(lessonID, req.body.ISBN)) {
+		res.status(200).send(new proto.BasicMessage({message: "Book successfully added for the lesson"}).toObject())
+        return;
+	}
+
 
 	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
 });

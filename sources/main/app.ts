@@ -13,5 +13,7 @@ app.get('/', async (req: Request, res: Response) => {
 
 import createRouter from './routes/Create';
 app.use('/create', createRouter)
+import removeRouter from './routes/Create';
+app.use('/remove', removeRouter)
 
 export = app;
