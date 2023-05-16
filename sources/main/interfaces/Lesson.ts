@@ -17,7 +17,8 @@ export function defaultLesson(): Lesson {
 }
 
 export function assignVals_JSON(json: any): Lesson {
-    const data: Lesson = {Nome_lezione: json.Nome_lezione, Materia: json.Materia, Professore: json.Professore, Ora_inizio: json.Ora_inizio, Ora_fine: json.Ora_fine, Giorno: json.Giorno, ID_Calendario: json.ID_Calendario}
+    var data: Lesson = defaultLesson()
+    data = {Nome_lezione: json.Nome_lezione, Materia: json.Materia, Professore: json.Professore, Ora_inizio: json.Ora_inizio, Ora_fine: json.Ora_fine, Giorno: json.Giorno, ID_Calendario: json.ID_Calendario}
     return data;
 }
 

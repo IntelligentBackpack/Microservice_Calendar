@@ -16,14 +16,8 @@ const AccessMicroserviceURL:string = "https://accessmicroservice.azurewebsites.n
 
 
 router.put('/calendar', async (req: {body: proto.Calendar}, res) => {
-    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.body.email_executor});
-    if(serverResponse.statusCode != 200) {
-        res.status(401).send(new proto.BasicMessage({message: "No privileges for creating a calendar."}).toObject())
-        return;
-    }
-
 	if(req.body.Anno_Scolastico == "" || req.body.Istituto == 0 || req.body.Classe == "") {
-		res.status(400).send(new proto.BasicMessage({ message: "Syntax error. Required: Anno_Scolastico, Istituto and Classe fields" }).toObject())
+		res.status(400).send(new proto.BasicMessage({ message: "Syntax error. Required: Anno_Scolastico, Istituto and Classe fields." }).toObject())
 		return;
 	}
 
@@ -31,6 +25,12 @@ router.put('/calendar', async (req: {body: proto.Calendar}, res) => {
 		res.status(400).send(new proto.BasicMessage({ message: "Calendar with those data already exists" }).toObject())
 		return;
 	}
+
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.body.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for creating a calendar."}).toObject())
+        return;
+    }
 
 	if(await queryAsk.create_Calendar(req.body.Anno_Scolastico, req.body.Istituto, req.body.Classe)) {
 		res.status(200).send(new proto.BasicMessage({ message: "Calendar created successfully" }).toObject())
@@ -40,12 +40,6 @@ router.put('/calendar', async (req: {body: proto.Calendar}, res) => {
 });
 
 router.put('/lesson', async (req: {body: proto.Lesson}, res) => {
-    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.body.email_executor});
-    if(serverResponse.statusCode != 200) {
-        res.status(401).send(new proto.BasicMessage({message: "No privileges for creating a lesson."}).toObject())
-        return;
-    }
-
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body)
 	if(!Lesson.isAssigned(lesson)) {
         res.status(400).send(new proto.BasicMessage({message: "Verify that all the values of the lessons are inserted."}).toObject())
@@ -62,7 +56,13 @@ router.put('/lesson', async (req: {body: proto.Lesson}, res) => {
         return;
 	}
 
-	if(!await queryAsk.create_Lesson(lesson)) {
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.body.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for creating a lesson."}).toObject())
+        return;
+    }
+
+	if(await queryAsk.create_Lesson(lesson)) {
         res.status(200).send(new proto.BasicMessage({message: "Lesson created successfully"}).toObject())
         return;
 	}
@@ -71,12 +71,6 @@ router.put('/lesson', async (req: {body: proto.Lesson}, res) => {
 });
 
 router.post('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
-    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
-    if(serverResponse.statusCode != 200) {
-        res.status(401).send(new proto.BasicMessage({message: "No privileges for adding a book to a lesson."}).toObject())
-        return;
-    }
-
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
 	if(!Lesson.isAssigned(lesson)) {
         res.status(400).send(new proto.BasicMessage({message: "Verify that all the values of the lessons are inserted."}).toObject())
@@ -84,6 +78,12 @@ router.post('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
 	}
 
 	const lessonID: number = await queryAsk.get_LessonID(Lesson.assignVals_JSON(req.body.lesson))
+
+	const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for adding a book to a lesson."}).toObject())
+        return;
+    }
 
 	if(await queryAsk.create_BookForLesson(lessonID, req.body.ISBN)) {
 		res.status(200).send(new proto.BasicMessage({message: "Book successfully added for the lesson"}).toObject())
