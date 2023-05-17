@@ -28,7 +28,7 @@ export function assignVals_DB(json: any): Lesson {
 }
 
 export function generate_protoLesson(json: Lesson): proto.Lesson {
-    return new proto.Lesson({email_executor: "", Nome_lezione: json.Nome_lezione, Materia: json.Materia, Professore: json.Professore, Ora_inizio: json.Ora_inizio, Ora_fine: json.Ora_fine, Giorno: json.Giorno, ID_Calendario: json.ID_Calendario})
+    return new proto.Lesson({Nome_lezione: json.Nome_lezione, Materia: json.Materia, Professore: json.Professore, Ora_inizio: json.Ora_inizio, Ora_fine: json.Ora_fine, Giorno: json.Giorno, ID_Calendario: json.ID_Calendario})
 }
 
 export function verify_Basic_DataPresence(json: any): boolean {    
