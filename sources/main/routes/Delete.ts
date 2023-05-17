@@ -23,8 +23,8 @@ router.delete('/lesson', async (req: {body: proto.LessonActions}, res) => {
 
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
 
-	if(lesson.Professore == "" || lesson.Ora_inizio == "" || lesson.Ora_fine == "" || lesson.Giorno == "") {
-        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine and giorno are inserted."}).toObject())
+	if(!Lesson.isAssigned_WithDate(lesson)) {
+        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."}).toObject())
         return;
 	}
 
@@ -45,8 +45,8 @@ router.delete('/bookForLesson', async (req: {body: proto.BookForLesson}, res) =>
     }
 
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
-	if(lesson.Professore == "" || lesson.Ora_inizio == "" || lesson.Ora_fine == "" || lesson.Giorno == "") {
-        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine and giorno are inserted."}).toObject())
+	if(!Lesson.isAssigned_WithDate(lesson)) {
+        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."}).toObject())
         return;
 	}
 
@@ -55,7 +55,7 @@ router.delete('/bookForLesson', async (req: {body: proto.BookForLesson}, res) =>
         return;
 	}
 
-	const lessonID: number = await queryAsk.get_LessonID(lesson)
+	const lessonID: number = await queryAsk.get_LessonID_WithDate(lesson)
 
 	if(await queryAsk.delete_BookForLesson(lessonID, req.body.ISBN)) {
 		res.status(200).send(new proto.BasicMessage({message: "Book successfully removed from the lesson"}).toObject())

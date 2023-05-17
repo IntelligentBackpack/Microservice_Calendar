@@ -1,6 +1,6 @@
 {
   "name": "microservice_calendar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "This microservice is used for handle the calendar functions. All these functions manage the informations about the lessons and the material needed for each of them",
   "main": "index.js",
   "scripts": {

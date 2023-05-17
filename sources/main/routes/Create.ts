@@ -41,8 +41,8 @@ router.put('/calendar', async (req: {body: proto.Calendar}, res) => {
 
 router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
-	if(!Lesson.isAssigned(lesson)) {
-        res.status(400).send(new proto.BasicMessage({message: "Verify that all the values of the lessons are inserted."}).toObject())
+	if(!Lesson.isAssigned_WithDate(lesson)) {
+        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."}).toObject())
         return;
 	}
 
@@ -72,13 +72,13 @@ router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
 
 router.put('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
-	if(lesson.Professore == "" || lesson.Ora_inizio == "" || lesson.Ora_fine == "" || lesson.Giorno == "") {
-        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine and giorno are inserted."}).toObject())
+	if(!Lesson.isAssigned_WithDate(lesson)) {
+        res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."}).toObject())
         return;
 	}
 
-	const lessonID: number = await queryAsk.get_LessonID(lesson)
-	console.log("lesson id found: " + lessonID)
+	const lessonID: number = await queryAsk.get_LessonID_WithDate(lesson)
+
 	const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
     if(serverResponse.statusCode != 200) {
         res.status(401).send(new proto.BasicMessage({message: "No privileges for adding a book to a lesson."}).toObject())
