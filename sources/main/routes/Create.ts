@@ -39,6 +39,7 @@ router.put('/calendar', async (req: {body: proto.Calendar}, res) => {
 	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
 });
 
+//TODO FIX verificare che nel periodo delle date scelte, non ci siano altre lezioni
 router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
 	if(!Lesson.isAssigned_WithDate(lesson)) {

@@ -17,5 +17,7 @@ import removeRouter from './routes/Delete';
 app.use('/remove', removeRouter)
 import utilityRouter from './routes/Utility';
 app.use('/utility', utilityRouter)
+import modifyRouter from './routes/Modify';
+app.use('/modify', modifyRouter)
 
 export = app;

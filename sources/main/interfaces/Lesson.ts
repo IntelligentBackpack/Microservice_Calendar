@@ -25,6 +25,8 @@ export function assignVals_JSON(json: any): Lesson {
 }
 
 export function assignVals_DB(json: any): Lesson {
+    console.log(json.Ora_inizio)
+    console.log(json.Data_Inizio)
     const data: Lesson = {Nome_lezione: json.Nome_lezione, Materia: json.Materia, Professore: json.Professore, Ora_inizio: json.Ora_inizio.toString(), Ora_fine: json.Ora_fine.toString(), Data_Inizio: json.Data_Inizio.toString(), Data_Fine: json.Data_Fine.toString(), Giorno: json.Giorno, ID_Calendario: json.ID_Calendario}
     return data;
 }

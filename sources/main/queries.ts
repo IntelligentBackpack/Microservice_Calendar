@@ -1,5 +1,5 @@
 import sql, { config } from 'mssql';
-import { Lesson } from './interfaces/Lesson';
+import * as Lesson from './interfaces/Lesson';
 
 const conf: config = {
     user: 'intelligentSystem', // better stored in an app setting such as process.env.DB_USER
@@ -54,6 +54,20 @@ export async function verify_MateriaExists(ID: number): Promise<boolean> {
     return true;
 }
 
+export async function verify_InnerLesson(lesson: Lesson.Lesson, nuovaDataInizio: string, nuovaDataFine: string): Promise<boolean> {
+    try {
+        const lessonID = await get_LessonID_WithDate(lesson)
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("Select * from Lezione Where Data_Inizio > '" + nuovaDataInizio + "' AND Data_Fine < '" + nuovaDataFine + "' AND Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "'"); //execute the query
+        poolConnection.close(); //close connection with database
+        return resultSet.rowsAffected[0] > 0
+        // ouput row contents from default record set
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return true;
+}
 
 
 
@@ -80,7 +94,7 @@ export async function create_Calendar(Anno_Scolastico: string, Istituto: number,
     return true;
 }
 
-export async function create_Lesson(lesson: Lesson): Promise<boolean> {
+export async function create_Lesson(lesson: Lesson.Lesson): Promise<boolean> {
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
@@ -97,11 +111,25 @@ export async function create_Lesson(lesson: Lesson): Promise<boolean> {
 export async function create_BookForLesson(ID_Lezione: number, ISBN: string): Promise<boolean> {
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
-        var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("Insert into LibroPerLezione values ("+ ID_Lezione + ", '" + ISBN + "')"); //execute the query
+        var resultSet:sql.IResult<any> = await poolConnection.request().query("If Not Exists(select * from LibroPerLezione where ID_lezione=" + ID_Lezione + " AND ISBN='"+ ISBN + "') Begin Insert into LibroPerLezione values ("+ ID_Lezione + ", '" + ISBN + "') End"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         return resultSet.rowsAffected[0] > 0;
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return false;
+}
+
+export async function create_BooksForLesson(ID_Lezione: number, ISBNs: string[]): Promise<boolean> {
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        for(var ISBN of ISBNs) {
+            var resultSet:sql.IResult<any> = await poolConnection.request().query("If Not Exists(select * from LibroPerLezione where ID_lezione=" + ID_Lezione + " AND ISBN='"+ ISBN + "') Begin Insert into LibroPerLezione values ("+ ID_Lezione + ", '" + ISBN + "') End"); //execute the query
+        }
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        return true
     } catch (e: any) /* istanbul ignore next */ {
         console.error(e);
     }
@@ -119,7 +147,7 @@ export async function create_BookForLesson(ID_Lezione: number, ISBN: string): Pr
 
 
 
-export async function delete_Lesson(lesson: Lesson): Promise<boolean> {
+export async function delete_Lesson(lesson: Lesson.Lesson): Promise<boolean> {
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
@@ -206,12 +234,12 @@ export async function get_Materia(ID: number): Promise<object> {
     return {};
 }
 
-export async function get_LessonID_WithDate(lesson: Lesson): Promise<number> {
+export async function get_LessonID_WithDate(lesson: Lesson.Lesson): Promise<number> {
     var ID = -1
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select * from Lezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "'"); //execute the query
+                                        .query("select * from Lezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "' AND Data_Inizio = '" + lesson.Data_Inizio + "' AND Data_Fine = '" + lesson.Data_Fine + "'"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
@@ -223,23 +251,22 @@ export async function get_LessonID_WithDate(lesson: Lesson): Promise<number> {
     return ID;
 }
 
-//TODO FINIRE
-// export async function get_LessonID_BetweenDate(lesson: Lesson): Promise<number> {
-//     var ID = -1
-//     try {
-//         var poolConnection = await sql.connect(conf); //connect to the database
-//         var resultSet:sql.IResult<any> = await poolConnection.request()
-//                                         .query("select * from Lezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "'"); //execute the query
-//         poolConnection.close(); //close connection with database
-//         // ouput row contents from default record set
-//         resultSet.recordset.forEach(function(row: any) {
-//             ID = row.ID
-//         });
-//     } catch (e: any) /* istanbul ignore next */ {
-//         console.error(e);
-//     }
-//     return ID;
-// }
+export async function get_LessonsID_BetweenDate(lesson: Lesson.Lesson, dataInterest: string): Promise<number[]> {
+    var ID: number[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Lezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "' AND Data_Inizio < '" + dataInterest + "' AND Data_Fine > '" + dataInterest + "'"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            ID.push(row.ID)
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return ID;
+}
 
 export async function get_Classes_OfProfessor(Professore: string): Promise<string[]> {
     var classes: string[] = [];
@@ -307,4 +334,71 @@ export async function get_Materie_OfStudent(ID_Calendario: number): Promise<stri
         console.error(e);
     }
     return subjects;
+}
+
+export async function get_BooksISBN_OfLesson(lesson: Lesson.Lesson): Promise<string[]> {
+    var ISBN: string[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select LibroPerLezione.ISBN from Lezione, LibroPerLezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "' AND Data_Inizio='" + lesson.Data_Inizio + "' AND Data_Fine='" + lesson.Data_Fine + "' AND Lezione.ID = LibroPerLezione.ID_lezione"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            ISBN.push(row.ISBN)
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return ISBN;
+}
+
+export async function get_Lesson_Information(ID: number): Promise<Lesson.Lesson> {
+    var lesson: Lesson.Lesson = Lesson.defaultLesson();
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Lezione where ID = " + ID); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            const OraInizio: string[] = (new Date(row.Ora_inizio).toISOString().split('T')[1]).split(':')
+            const OraFine: string[] = (new Date(row.Ora_fine).toISOString().split('T')[1]).split(':')
+            
+            row.Ora_inizio = OraInizio[0]+":"+OraInizio[1]
+            row.Ora_fine = OraFine[0]+":"+OraFine[1]
+            row.Data_Inizio = new Date(row.Data_Inizio).toISOString().split('T')[0]
+            row.Data_Fine = new Date(row.Data_Fine).toISOString().split('T')[0]
+            lesson = Lesson.assignVals_DB(row)
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return lesson
+}
+
+
+
+
+
+
+
+
+
+
+
+
+export async function change_Lezione_DataPeriod(lesson: Lesson.Lesson, nuovaDataInizio: string, nuovaDataFine: string) {
+    try {
+        const lessonID = await get_LessonID_WithDate(lesson)
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("Update Lezione Set Data_Inizio='" + nuovaDataInizio + "', Data_Fine='" + nuovaDataFine + "' Where ID=" + lessonID); //execute the query
+        poolConnection.close(); //close connection with database
+        return resultSet.rowsAffected[0] > 0
+        // ouput row contents from default record set
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return false;
 }
