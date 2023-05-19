@@ -1,0 +1,6 @@
+[submodule "CalendarCommunication"]
+	path = CalendarCommunication
+	url = https://github.com/IntelligentBackpack/CalendarCommunication.git
+[submodule "AccessCommunication"]
+	path = AccessCommunication
+	url = https://github.com/IntelligentBackpack/AccessCommunication.git
