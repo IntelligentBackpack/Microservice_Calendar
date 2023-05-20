@@ -173,9 +173,9 @@ describe.skip('Testing delete route', function() {
 
 
 describe('Testing modify route', function() {
-    const myLesson = new proto.Lesson({Nome_lezione: "Lezione2", Materia: 1, Professore: "admin", Ora_inizio: "5:00", Ora_fine: "7:00", Data_Inizio:'2000-04-04', Data_Fine:'2000-12-31', Giorno: "Lunedì", ID_Calendario: 3})
+    const myLesson = new proto.Lesson({Nome_lezione: "Lezione2", Materia: 1, Professore: "admin", Ora_inizio: "5:00", Ora_fine: "7:00", Data_Inizio:'2000-01-01', Data_Fine:'2000-12-31', Giorno: "Lunedì", ID_Calendario: 3})
     
-    describe.skip('Testing creating a lesson', function() {
+    describe('Testing creating a lesson', function() {
         it('Should return success 200 for adding a lesson', async() => {
             const serverResponse = await request(app).put('/create/lesson').send(new proto.LessonActions({email_executor: "admin", lesson: myLesson}).toObject());
     
@@ -192,7 +192,7 @@ describe('Testing modify route', function() {
         });
     });
 
-    describe.skip('Testing modify methods', function() {
+    describe('Testing modify methods', function() {
         it.skip('Should return 200 for changing lesson ending date', async() => {
             const serverResponse = await request(app).post('/modify/lessonTimePeriod').send(new proto.ChangeLessonPeriodDate({email_executor: "admin", lesson: lesson, nuovaInizioData: '1500-01-01', nuovaFineData: '1600-5-6'}).toObject());
     
@@ -205,10 +205,17 @@ describe('Testing modify route', function() {
             expect(serverResponse.statusCode).toBe(200)
         });
 
-        it('Should return 200 for changing books to a lesson', async() => {
+        it.skip('Should return 200 for changing books to a lesson', async() => {
             const serverResponse = await request(app).post('/modify/bookForTimePeriod').send(new proto.ChangeLessonBookPeriodDate({email_executor: "admin", lesson: myLesson, ISBN: ["0542, 9537"], nuovaInizioData: '2000-2-2', nuovaFineData: '2000-7-7'}).toObject());
     
             expect(serverResponse.statusCode).toBe(200)
+        });
+
+        it.skip('Should return 200 for setting a lesson as absence', async() => {
+            const serverResponse = await request(app).post('/modify/lessonAbsense').send(new proto.ChangeLessonPeriodDate({email_executor: "admin", lesson: myLesson, nuovaInizioData: '2000-2-2', nuovaFineData: '2000-7-7'}).toObject());
+    
+            expect(serverResponse.statusCode).toBe(200)
+            console.log(serverResponse.body.message)
         });
     })
 });

@@ -36,7 +36,6 @@ router.delete('/lesson', async (req: {body: proto.LessonActions}, res) => {
 	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
 });
 
-
 router.delete('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
     const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
     if(serverResponse.statusCode != 200) {
@@ -59,6 +58,61 @@ router.delete('/bookForLesson', async (req: {body: proto.BookForLesson}, res) =>
 
 	if(await queryAsk.delete_BookForLesson(lessonID, req.body.ISBN)) {
 		res.status(200).send(new proto.BasicMessage({message: "Book successfully removed from the lesson"}).toObject())
+        return;
+	}
+
+	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+});
+
+router.delete('/lessonsOfProfessor/everywhere', async (req, res) => {
+    if(req.query.professor == undefined) {
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify a professor."}).toObject())
+        return;
+    }
+
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.query.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for deleting a lesson."}).toObject())
+        return;
+    }
+
+	if(await queryAsk.delete_Lessons_OfProfessor_Everywhere(req.query.professor.toString())) {
+        res.status(200).send(new proto.BasicMessage({message: "Lessons deleted successfully"}).toObject())
+        return;
+	}
+
+	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+});
+
+router.delete('/lessonsOfProfessor/ID', async (req: {body: proto.DeleteLessonsOfProfessor}, res) => {
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.body.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for deleting a lesson."}).toObject())
+        return;
+    }
+
+    const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarID.anno, req.body.CalendarID.istituto, req.body.CalendarID.classe)
+
+	if(await queryAsk.delete_Lessons_OfProfessor_Calendar(req.body.professor, calendarID)) {
+        res.status(200).send(new proto.BasicMessage({message: "Lessons deleted successfully"}).toObject())
+        return;
+	}
+
+	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+});
+
+router.delete('/lessonsOfProfessor/Reference', async (req: {body: proto.DeleteLessonsOfProfessor}, res) => {
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_HIGH').query({ email: req.body.email_executor});
+    if(serverResponse.statusCode != 200) {
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for deleting a lesson."}).toObject())
+        return;
+    }
+
+    var serverResponse2 = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({ istitutoNome: req.body.CalendarExplicit.nomeIstituto, istitutoCitta: req.body.CalendarExplicit.nomeCitta});
+    const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarExplicit.anno, serverResponse2.body.message, req.body.CalendarExplicit.classe)
+
+	if(await queryAsk.delete_Lessons_OfProfessor_Calendar(req.body.professor, calendarID)) {
+        res.status(200).send(new proto.BasicMessage({message: "Lessons deleted successfully"}).toObject())
         return;
 	}
 

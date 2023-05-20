@@ -6,6 +6,7 @@ import * as protoCalendar from '../generated/calendar'
 import * as protoAccess from '../generated/access'
 import proto = protoCalendar.calendar
 import protoAccs = protoAccess.access
+import * as Lesson from '../interfaces/Lesson';
 
 const router = Router();
 export default router;
@@ -30,7 +31,6 @@ router.get('/getProfessorInformations', async (req, res) => {
     
     res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), classes: classes, subjects: subjects, insitutes: institutesName}).toObject())
 });
-
 
 router.get('/getStudentInformations', async (req, res) => {
     if(req.query.email == undefined || req.query.year == undefined ) {
@@ -58,4 +58,78 @@ router.get('/getStudentInformations', async (req, res) => {
     const materie = await queryAsk.get_Materie_OfStudent(calendarID);
     res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), classes: classe, subjects: materie, insitutes: [istitutoNameAndCitta]}).toObject())
 
+});
+
+router.get('/lessons/today/ID', async (req: {body: proto.LessonInDate}, res) => {
+    const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarID.anno, req.body.CalendarID.istituto, req.body.CalendarID.classe)
+
+    var lessons: proto.Lesson[] = [];
+    //generate all the proto required
+    const allLessonsOfDate = await queryAsk.get_Lessons_InDateWithDay(calendarID, req.body.date, req.body.giorno)
+    for(var i = 0; i < allLessonsOfDate.length; i++) {
+        lessons.push(Lesson.generate_protoLesson(allLessonsOfDate[i]))
+    }
+
+    res.status(200).send(new proto.Lessons({Lessons: lessons}).toObject())
+
+});
+
+router.get('/lessons/today/Reference', async (req: {body: proto.LessonInDate}, res) => {
+    var serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({ istitutoNome: req.body.CalendarExplicit.nomeIstituto, istitutoCitta: req.body.CalendarExplicit.nomeCitta});
+    const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarExplicit.anno, serverResponse.body.message, req.body.CalendarExplicit.classe)
+    var lessons: proto.Lesson[] = [];
+    //generate all the proto required
+    const allLessonsOfDate = await queryAsk.get_Lessons_InDateWithDay(calendarID, req.body.date, req.body.giorno)
+    for(var i = 0; i < allLessonsOfDate.length; i++) {
+        lessons.push(Lesson.generate_protoLesson(allLessonsOfDate[i]))
+    }
+
+    res.status(200).send(new proto.Lessons({Lessons: lessons}).toObject())
+
+});
+
+router.get('/lessons/booksForDate/ID', async (req: {body: proto.LessonInDate}, res) => {
+    const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarID.anno, req.body.CalendarID.istituto, req.body.CalendarID.classe)
+
+    var ISBNs: string[] = [];
+    //generate all the proto required
+    const allLessonsOfDate = await queryAsk.get_Books_InDate(calendarID, req.body.date, req.body.giorno)
+    for(var i = 0; i < allLessonsOfDate.length; i++) {
+       ISBNs.push(allLessonsOfDate[i])
+    }
+
+    res.status(200).send(new proto.BasicMessage({message2: ISBNs}).toObject())
+
+});
+
+router.get('/lessons/booksForDate/Reference', async (req: {body: proto.LessonInDate}, res) => {
+    var serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({ istitutoNome: req.body.CalendarExplicit.nomeIstituto, istitutoCitta: req.body.CalendarExplicit.nomeCitta});
+    const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarExplicit.anno, serverResponse.body.message, req.body.CalendarExplicit.classe)
+    
+    var ISBNs: string[] = [];
+    //generate all the proto required
+    const allLessonsOfDate = await queryAsk.get_Books_InDate(calendarID, req.body.date, req.body.giorno)
+    for(var i = 0; i < allLessonsOfDate.length; i++) {
+       ISBNs.push(allLessonsOfDate[i])
+    }
+
+    res.status(200).send(new proto.BasicMessage({message2: ISBNs}).toObject())
+
+});
+
+
+
+
+router.post('/changeEmail', async (req, res) => {
+    if(req.query.oldEmail == undefined || req.query.nuovaEmail == undefined ) {
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify the old and new email."}).toObject())
+        return;
+    }
+
+    if(await queryAsk.change_Email(req.query.oldEmail.toString(), req.query.nuovaEmail.toString())) {
+        res.status(200).send(new proto.BasicMessage({message: "Email changed successfully"}).toObject())
+        return;
+    }
+
+    res.status(500).send(new proto.BasicMessage({message: "Internal server error."}).toObject())
 });

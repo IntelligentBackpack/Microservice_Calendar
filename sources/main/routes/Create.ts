@@ -39,7 +39,6 @@ router.put('/calendar', async (req: {body: proto.Calendar}, res) => {
 	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
 });
 
-//TODO FIX verificare che nel periodo delle date scelte, non ci siano altre lezioni
 router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
 	if(!Lesson.isAssigned_WithDate(lesson)) {
@@ -62,6 +61,17 @@ router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
         res.status(401).send(new proto.BasicMessage({message: "No privileges for creating a lesson."}).toObject())
         return;
     }
+
+	const IDLessons: number[] = await queryAsk.get_LessonsID_BetweenDate(lesson, lesson.Data_Inizio)
+	if(IDLessons.length > 0) {
+		res.status(400).send(new proto.BasicMessage({message: "The lesson overlap another period of time."}).toObject())
+        return;
+	}
+	const IDLessons2: number[] = await queryAsk.get_LessonsID_BetweenDate(lesson, lesson.Data_Fine)
+	if(IDLessons2.length > 0) {
+		res.status(400).send(new proto.BasicMessage({message: "The lesson overlap another period of time."}).toObject())
+        return;
+	}
 
 	if(await queryAsk.create_Lesson(lesson)) {
         res.status(200).send(new proto.BasicMessage({message: "Lesson created successfully"}).toObject())
