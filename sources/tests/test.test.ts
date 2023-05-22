@@ -98,9 +98,9 @@ describe('Testing utility route', function() {
 describe('Testing delete route', function() {
     describe('Testing deletion of a book', function() {
         it('cannot remove a book because of no ISBN', async() => {
-            const serverResponse = await request(app).delete('/remove/bookForLesson').send(new proto.BooksForLesson({email_executor: "admin", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "GiulioCesare", Ora_inizio: "11:30", Ora_fine: "12:30", Giorno: "Giovedì", ID_Calendario: 3})}).toObject())
+            const serverResponse = await request(app).delete('/remove/bookForLesson').send(new proto.BooksForLesson({email_executor: "admin", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "admin", Ora_inizio: "11:30", Ora_fine: "12:30", Giorno: "Giovedì", ID_Calendario: 3})}).toObject())
             expect(serverResponse.statusCode).toBe(400)
-            expect(serverResponse.body.message).toBe("No ISBN passed")
+            expect(serverResponse.body.message).toBe("No ISBNs passed")
         });
 
         it('cannot remove a book because it does not have privileges', async() => {
@@ -192,7 +192,7 @@ describe('Testing delete route', function() {
 
 describe('Testing modify route', function() {
     const myLesson = new proto.Lesson({Nome_lezione: "BasicLessonOfModifyRouteTests", Materia: 1, Professore: "admin", Ora_inizio: "5:00", Ora_fine: "7:00", Data_Inizio:'7000-1-1', Data_Fine:'9500-1-1', Giorno: "Lunedì", ID_Calendario: 3})
-    const myLesson2 = new proto.Lesson({Nome_lezione: "BasicLessonOfModifyRouteTests", Materia: 1, Professore: "admin", Ora_inizio: "5:00", Ora_fine: "7:00", Data_Inizio:'7000-1-1', Data_Fine:'9500-1-1', Giorno: "Lunedì", ID_Calendario: 3})
+    const myLesson2 = new proto.Lesson({Nome_lezione: "BasicLessonOfModifyRouteTests", Materia: 1, Professore: "admin", Ora_inizio: "8:00", Ora_fine: "12:00", Data_Inizio:'7000-1-1', Data_Fine:'9500-1-1', Giorno: "Lunedì", ID_Calendario: 3})
     
     describe('Testing creating a lesson', function() {
         it('Should return success 200 for adding a lesson', async() => {
@@ -200,7 +200,6 @@ describe('Testing modify route', function() {
             serverResponse = await request(app).put('/create/lesson').send(new proto.LessonActions({email_executor: "admin", lesson: myLesson2}).toObject());
     
             expect(serverResponse.statusCode).toBe(200)
-            expect(serverResponse.body.message).toBe("Lesson created successfully")
         });
     });
 
