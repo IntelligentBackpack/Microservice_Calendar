@@ -56,7 +56,6 @@ export async function verify_MateriaExists(ID: number): Promise<boolean> {
 
 export async function verify_InnerLesson(lesson: Lesson.Lesson, nuovaDataInizio: string, nuovaDataFine: string): Promise<boolean> {
     try {
-        const lessonID = await get_LessonID_WithDate(lesson)
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
                                         .query("Select * from Lezione Where Data_Inizio > '" + nuovaDataInizio + "' AND Data_Fine < '" + nuovaDataFine + "' AND Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "'"); //execute the query
@@ -125,7 +124,8 @@ export async function create_BooksForLesson(ID_Lezione: number, ISBNs: string[])
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         for(var ISBN of ISBNs) {
-            var resultSet:sql.IResult<any> = await poolConnection.request().query("If Not Exists(select * from LibroPerLezione where ID_lezione=" + ID_Lezione + " AND ISBN='"+ ISBN + "') Begin Insert into LibroPerLezione values ("+ ID_Lezione + ", '" + ISBN + "') End"); //execute the query
+            console.log("adding " + ISBN)
+            await poolConnection.request().query("If Not Exists(select * from LibroPerLezione where ID_lezione=" + ID_Lezione + " AND ISBN='"+ ISBN + "') Begin Insert into LibroPerLezione values ("+ ID_Lezione + ", '" + ISBN + "') End"); //execute the query
         }
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
@@ -149,8 +149,8 @@ export async function create_BooksForLesson(ID_Lezione: number, ISBNs: string[])
 
 export async function delete_Lesson(lesson: Lesson.Lesson): Promise<boolean> {
     try {
-        var poolConnection = await sql.connect(conf); //connect to the database
         const ID_Lezione = await get_LessonID_WithDate(lesson)
+        var poolConnection = await sql.connect(conf); //connect to the database
         await poolConnection.request().query("Delete from Lezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "' AND Data_Inizio='" + lesson.Data_Inizio + "' AND Data_Fine='" + lesson.Data_Fine + "'"); //execute the query
         await poolConnection.request().query("Delete from LibroPerLezione Where ID_lezione="+ID_Lezione); //execute the query
         poolConnection.close(); //close connection with database
@@ -162,14 +162,15 @@ export async function delete_Lesson(lesson: Lesson.Lesson): Promise<boolean> {
     return false;
 }
 
-export async function delete_BookForLesson(ID_Lezione: number, ISBN: string): Promise<boolean> {
+export async function delete_BooksForLesson(ID_Lezione: number, ISBNs: string[]): Promise<boolean> {
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
-        var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("Delete from LibroPerLezione where ID_lezione="+ ID_Lezione + " AND ISBN = '" + ISBN + "'"); //execute the query
+        for(var ISBN of ISBNs) {
+            await poolConnection.request().query("Delete from LibroPerLezione where ID_lezione="+ ID_Lezione + " AND ISBN = '" + ISBN + "'"); //execute the query
+        }
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
-        return resultSet.rowsAffected[0] > 0;
+        return true;
     } catch (e: any) /* istanbul ignore next */ {
         console.error(e);
     }
@@ -301,7 +302,7 @@ export async function get_Classes_OfProfessor(Professore: string): Promise<strin
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select Calendario.Classe from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
+                                        .query("select DISTINCT Calendario.Classe from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
@@ -318,7 +319,7 @@ export async function get_Subjects_OfProfessor(Professore: string): Promise<stri
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select Materia.Nome from Lezione, Materia where Lezione.Professore = '" + Professore + "' AND Lezione.Materia = Materia.ID"); //execute the query
+                                        .query("select DISTINCT Materia.Nome from Lezione, Materia where Lezione.Professore = '" + Professore + "' AND Lezione.Materia = Materia.ID AND Lezione.Materia > 0"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
@@ -335,7 +336,7 @@ export async function get_Institutes_OfProfessor(Professore: string): Promise<nu
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select Calendario.Istituto from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
+                                        .query("select DISTINCT Calendario.Istituto from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {

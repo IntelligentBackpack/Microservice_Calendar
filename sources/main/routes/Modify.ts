@@ -4,7 +4,6 @@ import { Router, query } from 'express';
 import * as queryAsk from '../queries';
 import * as Lesson from '../interfaces/Lesson'
 import * as protoCalendar from '../generated/calendar'
-import * as protoAccess from '../generated/access'
 import proto = protoCalendar.calendar
 
 const router = Router();
@@ -44,7 +43,7 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
         return;
     }
 
-    const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
+    var lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
     //controlla che ci sia già una lezione che comprende quel periodo di date. se c'è, aggiungo semplicemente un libro
     const existingLessonID = await queryAsk.get_LessonID_WithDate(Lesson.assignVals_JSON({Nome_lezione: lesson.Nome_lezione, Materia: lesson.Materia, Professore: lesson.Professore,
                                                                     Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: req.body.nuovaFineData, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario}));
@@ -81,6 +80,7 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
     //se la lunghezza è invariata, la lezione è creata iteramente dentro 1 lezione singola
     if(result.length == IDLessons1.length) {
         //se la lunghezza è 1, ho solo 1 lezione nel periodo selezionato.
+        lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
         const ISBNsOfLessonsToBeChanged: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
@@ -95,7 +95,8 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
         const ISBN_ToAdd: string[] = ISBNsOfLessonsToBeChanged.concat(req.body.ISBN)
         await queryAsk.create_Lesson(les)
         const lesID = await queryAsk.get_LessonID_WithDate(les);
-        await queryAsk.create_BooksForLesson(lesID, ISBN_ToAdd) //aggiungo tutti gli ISBN
+        if(ISBN_ToAdd.length > 0)
+            await queryAsk.create_BooksForLesson(lesID, ISBN_ToAdd) //aggiungo tutti gli ISBN
 
 
         //creo l'ultima lezione, che sarebbe come la prima lezione, ma con le date finali
@@ -103,7 +104,8 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
                     Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaFineData, Data_Fine: lesson.Data_Fine, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
         await queryAsk.create_Lesson(les2)
         const lesID2 = await queryAsk.get_LessonID_WithDate(les2);
-        await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+        if(ISBNsOfLessonsToBeChanged.length > 0)
+            await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
         res.status(200).send(new proto.BasicMessage({message: "Books changed successfully."}).toObject())
@@ -112,6 +114,7 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
 
     //ci si ritrova che la lezione da inserire si trova a cavallo tra 2 lezioni.
     //sposto la 1° lezione
+    lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
         res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
         return;
@@ -131,7 +134,8 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
     const ISBN_ToAdd: string[] = ISBNsOfLessonsToBeChanged.concat(req.body.ISBN)
     await queryAsk.create_Lesson(les)
     const lesID = await queryAsk.get_LessonID_WithDate(les);
-    await queryAsk.create_BooksForLesson(lesID, ISBN_ToAdd) //aggiungo tutti gli ISBN
+    if(ISBN_ToAdd.length > 0)
+        await queryAsk.create_BooksForLesson(lesID, ISBN_ToAdd) //aggiungo tutti gli ISBN
 
 
 
@@ -141,7 +145,8 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
     const ISBN_ToAdd2: string[] = ISBNsOfLessonsToBeChanged2.concat(req.body.ISBN)
     await queryAsk.create_Lesson(les2)
     const lesID2 = await queryAsk.get_LessonID_WithDate(les);
-    await queryAsk.create_BooksForLesson(lesID2, ISBN_ToAdd2) //aggiungo tutti gli ISBN
+    if(ISBN_ToAdd2.length > 0)
+        await queryAsk.create_BooksForLesson(lesID2, ISBN_ToAdd2) //aggiungo tutti gli ISBN
 
     res.status(200).send(new proto.BasicMessage({message: "Books changed successfully."}).toObject())
     return;
@@ -158,7 +163,7 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
         return;
     }
 
-    const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
+    var lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
     //controlla che ci sia già una lezione che comprende quel periodo di date. se c'è, aggiungo semplicemente un libro
 	const newLesson = Lesson.assignVals_JSON({Nome_lezione: lesson.Nome_lezione, Materia: 0, Professore: lesson.Professore,
 		Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: req.body.nuovaFineData, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
@@ -189,6 +194,7 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
     //se la lunghezza è invariata, la lezione è creata iteramente dentro 1 lezione singola
     if(result.length == IDLessons1.length) {
         //se la lunghezza è 1, ho solo 1 lezione nel periodo selezionato.
+        lesson = await queryAsk.get_Lesson_Information(+IDLessons1)
         const originalISBNs: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
@@ -208,7 +214,8 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
                     Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaFineData, Data_Fine: lesson.Data_Fine, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
         await queryAsk.create_Lesson(les2)
         const lesID2 = await queryAsk.get_LessonID_WithDate(les2);
-        await queryAsk.create_BooksForLesson(lesID2, originalISBNs) //aggiungo tutti gli ISBN
+        if(originalISBNs.length > 0)
+            await queryAsk.create_BooksForLesson(lesID2, originalISBNs) //aggiungo tutti gli ISBN
 
 
         res.status(200).send(new proto.BasicMessage({message: "Lesson set as absence successfully."}).toObject())
@@ -217,6 +224,7 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
 
     //ci si ritrova che la lezione da inserire si trova a cavallo tra 2 lezioni.
     //sposto la 1° lezione
+    lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
         res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
         return;
@@ -248,7 +256,7 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
         return;
     }
 
-    const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
+    var lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
     //controlla che ci sia già una lezione che comprende quel periodo di date. se c'è, aggiungo semplicemente un libro
     const newLesson = Lesson.assignVals_JSON({Nome_lezione: lesson.Nome_lezione, Materia: lesson.Materia, Professore: lesson.Professore,
         Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: req.body.nuovaFineData, Giorno: req.body.nuovoGiorno, ID_Calendario: lesson.ID_Calendario});
@@ -286,6 +294,7 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
     //se la lunghezza è invariata, la lezione è creata iteramente dentro 1 lezione singola
     if(result.length == IDLessons1.length) {
         //se la lunghezza è 1, ho solo 1 lezione nel periodo selezionato.
+        lesson = await queryAsk.get_Lesson_Information(+IDLessons1)
         const ISBNsOfLessonsToBeChanged: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
@@ -299,7 +308,8 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
                                     Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: req.body.nuovaFineData, Giorno: req.body.nuovoGiorno, ID_Calendario: lesson.ID_Calendario})
         await queryAsk.create_Lesson(les)
         const lesID = await queryAsk.get_LessonID_WithDate(les);
-        await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+        if(ISBNsOfLessonsToBeChanged.length > 0)
+            await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
         //creo l'ultima lezione, che sarebbe come la prima lezione, ma con le date finali
@@ -307,7 +317,8 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
                     Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaFineData, Data_Fine: lesson.Data_Fine, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
         await queryAsk.create_Lesson(les2)
         const lesID2 = await queryAsk.get_LessonID_WithDate(les2);
-        await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+        if(ISBNsOfLessonsToBeChanged.length > 0)
+            await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
         res.status(200).send(new proto.BasicMessage({message: "Successfully changed date to lesson."}).toObject())
@@ -316,6 +327,7 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
 
     //ci si ritrova che la lezione da inserire si trova a cavallo tra 2 lezioni.
     //sposto la 1° lezione
+    lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
         res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
         return;
@@ -334,7 +346,8 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
                                 Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: lesson.Data_Fine, Giorno: req.body.nuovoGiorno, ID_Calendario: lesson.ID_Calendario})
     await queryAsk.create_Lesson(les)
     const lesID = await queryAsk.get_LessonID_WithDate(les);
-    await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+    if(ISBNsOfLessonsToBeChanged.length > 0)
+        await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
 
@@ -343,7 +356,8 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
                                 Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: lesson.Data_Fine, Data_Fine: req.body.nuovaFineData, Giorno: req.body.nuovoGiorno, ID_Calendario: lesson.ID_Calendario})
     await queryAsk.create_Lesson(les2)
     const lesID2 = await queryAsk.get_LessonID_WithDate(les);
-    await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+    if(ISBNsOfLessonsToBeChanged.length > 0)
+        await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
     res.status(200).send(new proto.BasicMessage({message: "Successfully changed date to lesson."}).toObject())
     return;
@@ -360,7 +374,7 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
         return;
     }
 
-    const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
+    var lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
     //controlla che ci sia già una lezione che comprende quel periodo di date. se c'è, aggiungo semplicemente un libro
     const newLesson = Lesson.assignVals_JSON({Nome_lezione: lesson.Nome_lezione, Materia: lesson.Materia, Professore: lesson.Professore,
         Ora_inizio: req.body.nuovaOraInizio, Ora_fine: req.body.nuovaOraFine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: req.body.nuovaFineData, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario});
@@ -399,6 +413,7 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
     //se la lunghezza è invariata, la lezione è creata iteramente dentro 1 lezione singola
     if(result.length == IDLessons1.length) {
         //se la lunghezza è 1, ho solo 1 lezione nel periodo selezionato.
+        lesson = await queryAsk.get_Lesson_Information(+IDLessons1)
         const ISBNsOfLessonsToBeChanged: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
@@ -412,7 +427,8 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
                                     Ora_inizio: req.body.nuovaOraInizio, Ora_fine: req.body.nuovaOraFine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: req.body.nuovaFineData, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
         await queryAsk.create_Lesson(les)
         const lesID = await queryAsk.get_LessonID_WithDate(les);
-        await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+        if(ISBNsOfLessonsToBeChanged.length > 0)
+            await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
         //creo l'ultima lezione, che sarebbe come la prima lezione, ma con le date finali
@@ -420,7 +436,8 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
                                     Ora_inizio: lesson.Ora_inizio, Ora_fine: lesson.Ora_fine, Data_Inizio: req.body.nuovaFineData, Data_Fine: lesson.Data_Fine, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
         await queryAsk.create_Lesson(les2)
         const lesID2 = await queryAsk.get_LessonID_WithDate(les2);
-        await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+        if(ISBNsOfLessonsToBeChanged.length > 0)
+            await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
         res.status(200).send(new proto.BasicMessage({message: "Successfully changed time to lesson."}).toObject())
@@ -429,6 +446,7 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
 
     //ci si ritrova che la lezione da inserire si trova a cavallo tra 2 lezioni.
     //sposto la 1° lezione
+    lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
         res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
         return;
@@ -447,7 +465,8 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
                                 Ora_inizio: req.body.nuovaOraInizio, Ora_fine: req.body.nuovaOraFine, Data_Inizio: req.body.nuovaInizioData, Data_Fine: lesson.Data_Fine, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
     await queryAsk.create_Lesson(les)
     const lesID = await queryAsk.get_LessonID_WithDate(les);
-    await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+    if(ISBNsOfLessonsToBeChanged.length > 0)
+        await queryAsk.create_BooksForLesson(lesID, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
 
 
@@ -456,7 +475,8 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
                                 Ora_inizio: req.body.nuovaOraInizio, Ora_fine: req.body.nuovaOraFine, Data_Inizio: lesson.Data_Fine, Data_Fine: req.body.nuovaFineData, Giorno: lesson.Giorno, ID_Calendario: lesson.ID_Calendario})
     await queryAsk.create_Lesson(les2)
     const lesID2 = await queryAsk.get_LessonID_WithDate(les);
-    await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
+    if(ISBNsOfLessonsToBeChanged.length > 0)
+        await queryAsk.create_BooksForLesson(lesID2, ISBNsOfLessonsToBeChanged) //aggiungo tutti gli ISBN
 
     res.status(200).send(new proto.BasicMessage({message: "Successfully changed time to lesson."}).toObject())
     return;

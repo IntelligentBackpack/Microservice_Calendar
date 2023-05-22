@@ -5,7 +5,6 @@ import * as queryAsk from '../queries';
 import * as protoCalendar from '../generated/calendar'
 import * as protoAccess from '../generated/access'
 import proto = protoCalendar.calendar
-import protoAccs = protoAccess.access
 import * as Lesson from '../interfaces/Lesson';
 
 const router = Router();
@@ -43,20 +42,10 @@ router.get('/getStudentInformations', async (req, res) => {
         return;
     }
     const classe = serverResponse.body.classe;
-    const istitutoNameAndCitta = serverResponse.body.istituto.IstitutoNome+" / "+serverResponse.body.istituto.IstitutoCitta
-
-    const istitutiList = await (await request(AccessMicroserviceURL).get('/utility/get_istituti')).body.istituti
-    var istitutoID = -1;
-    //need to identify which istitute is called and have the same city as student has
-    for(var istituto of istitutiList) {
-        if((istituto.IstitutoNome+" / "+istituto.IstitutoCitta) === istitutoNameAndCitta) {
-            istitutoID = istituto.ID
-            break;
-        }
-    }
-    const calendarID = await queryAsk.get_Calendar_ID(req.query.year.toString(), istitutoID, classe)
+    
+    const calendarID = await queryAsk.get_Calendar_ID(req.query.year.toString(), +serverResponse.body.istituto.ID, classe)
     const materie = await queryAsk.get_Materie_OfStudent(calendarID);
-    res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), classes: classe, subjects: materie, insitutes: [istitutoNameAndCitta]}).toObject())
+    res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), classes: classe, subjects: materie}).toObject())
 
 });
 

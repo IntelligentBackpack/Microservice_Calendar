@@ -5,7 +5,6 @@ import * as queryAsk from '../queries';
 import * as protoCalendar from '../generated/calendar'
 import * as protoAccess from '../generated/access'
 import proto = protoCalendar.calendar
-import protoAccs = protoAccess.access
 import * as Lesson from '../interfaces/Lesson';
 
 const router = Router();
@@ -73,6 +72,11 @@ router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
         return;
 	}
 
+	if(await queryAsk.get_LessonID_WithDate(lesson) != -1) {
+		res.status(400).send(new proto.BasicMessage({ message: "The same lesson already exists" }).toObject())
+		return;
+	}
+
 	if(await queryAsk.create_Lesson(lesson)) {
         res.status(200).send(new proto.BasicMessage({message: "Lesson created successfully"}).toObject())
         return;
@@ -81,7 +85,7 @@ router.put('/lesson', async (req: {body: proto.LessonActions}, res) => {
 	res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
 });
 
-router.put('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
+router.put('/bookForLesson', async (req: {body: proto.BooksForLesson}, res) => {
 	const lesson: Lesson.Lesson = Lesson.assignVals_JSON(req.body.lesson)
 	if(!Lesson.isAssigned_WithDate(lesson)) {
         res.status(400).send(new proto.BasicMessage({message: "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."}).toObject())
@@ -96,8 +100,8 @@ router.put('/bookForLesson', async (req: {body: proto.BookForLesson}, res) => {
         return;
     }
 
-	if(await queryAsk.create_BookForLesson(lessonID, req.body.ISBN)) {
-		res.status(200).send(new proto.BasicMessage({message: "Book successfully added for the lesson"}).toObject())
+	if(await queryAsk.create_BooksForLesson(lessonID, req.body.ISBNs)) {
+		res.status(200).send(new proto.BasicMessage({message: "Books successfully added for the lesson"}).toObject())
         return;
 	}
 
