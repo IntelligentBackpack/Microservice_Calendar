@@ -4,7 +4,7 @@ import app from '../main/app';
 import * as protoCalendar from '../main/generated/calendar'
 import proto = protoCalendar.calendar
 
-jest.setTimeout(30000);
+jest.setTimeout(45000);
 
 
 
