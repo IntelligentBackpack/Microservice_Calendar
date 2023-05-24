@@ -19,7 +19,7 @@ router.post('/lessonTimePeriod', async (req:{body: proto.ChangeLessonPeriodDate}
 
     const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
     if(serverResponse.statusCode != 200) {
-        res.status(401).send(new proto.BasicMessage({message: "No privileges for adding a book to a lesson."}).toObject())
+        res.status(401).send(new proto.BasicMessage({message: "No privileges for changing lesson period."}).toObject())
         return;
     }
 
@@ -52,14 +52,14 @@ router.post('/bookForTimePeriod', async (req:{body: proto.ChangeLessonBookPeriod
             res.status(200).send(new proto.BasicMessage({message: "Book successfully added for the lesson"}).toObject())
             return;
         }
-        res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+        res.status(500).send(new proto.BasicMessage({ message: "There was an error while adding the books." }).toObject())
         return;
     }
 
     //se non c'è, devo prendere le lezioni che comprendono il periodo
     //se è presente una lezione all'interno del periodo specificato, do errore perchè le inner lessons non sono gestite
     if(await queryAsk.verify_InnerLesson(lesson, req.body.nuovaInizioData.toString(), req.body.nuovaFineData.toString())) {
-        res.status(400).send(new proto.BasicMessage({message: "There is already a lesson contained in the period you specified. Please change or remove it"}).toObject())
+        res.status(400).send(new proto.BasicMessage({message: "There is a lesson contained in the period you specified. Please change or remove it"}).toObject())
         return;
     }
 
@@ -177,6 +177,11 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
         return;
     }
 
+    if(await queryAsk.verify_InnerLesson(lesson, req.body.nuovaInizioData.toString(), req.body.nuovaFineData.toString())) {
+        res.status(400).send(new proto.BasicMessage({message: "There is a lesson contained in the period you specified. Please change or remove it"}).toObject())
+        return;
+    }
+
     //ottengo tutte le lezioni che hanno quella data di inizio e fine dentro il loro periodo
     const IDLessons1: number[] = await queryAsk.get_LessonsID_BetweenDate(lesson, req.body.nuovaInizioData.toString())
     const IDLessons2: number[] =  await queryAsk.get_LessonsID_BetweenDate(lesson, req.body.nuovaFineData.toString())
@@ -198,7 +203,7 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
         const originalISBNs: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
-            res.status(500).send(new proto.BasicMessage({message: "There was an error while setting the lesson as absence."}).toObject())
+            res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the lesson."}).toObject())
             return;
         }
         
@@ -226,13 +231,13 @@ router.post('/lessonAbsense', async (req:{body: proto.ChangeLessonPeriodDate}, r
     //sposto la 1° lezione
     lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
-        res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
+        res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the lesson."}).toObject())
         return;
     }
     //sposto la 2° lezione
     const lesson2: Lesson.Lesson = await queryAsk.get_Lesson_Information(IDLessons2[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson2, req.body.nuovaFineData, lesson2.Data_Fine)) {
-        res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
+        res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the lesson."}).toObject())
         return;
     }
 
@@ -266,14 +271,14 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
             res.status(200).send(new proto.BasicMessage({message: "Successfully changed date to lesson"}).toObject())
             return;
         }
-        res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+        res.status(500).send(new proto.BasicMessage({ message: "There was an error while changing the day" }).toObject())
         return;
     }
 
     //se non c'è, devo prendere le lezioni che comprendono il periodo
     //se è presente una lezione all'interno del periodo specificato, do errore perchè le inner lessons non sono gestite
     if(await queryAsk.verify_InnerLesson(lesson, req.body.nuovaInizioData.toString(), req.body.nuovaFineData.toString())) {
-        res.status(400).send(new proto.BasicMessage({message: "There is already a lesson contained in the period you specified. Please change or remove it"}).toObject())
+        res.status(400).send(new proto.BasicMessage({message: "There is a lesson contained in the period you specified. Please change or remove it"}).toObject())
         return;
     }
 
@@ -298,7 +303,7 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
         const ISBNsOfLessonsToBeChanged: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
-            res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the time."}).toObject())
+            res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the day"}).toObject())
             return;
         }
         
@@ -329,13 +334,13 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
     //sposto la 1° lezione
     lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
-        res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
+        res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the day"}).toObject())
         return;
     }
     //sposto la 2° lezione
     const lesson2: Lesson.Lesson = await queryAsk.get_Lesson_Information(IDLessons2[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson2, req.body.nuovaFineData, lesson2.Data_Fine)) {
-        res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
+        res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the day"}).toObject())
         return;
     }
 
@@ -365,7 +370,7 @@ router.post('/dayOfLesson', async (req:{body: proto.ChangeLessonDay}, res) => {
 
 router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) => {
     if(req.body.nuovaFineData == "" || req.body.nuovaInizioData == "" || req.body.nuovaOraInizio == "" || req.body.nuovaOraFine == "") {
-        res.status(400).send(new proto.BasicMessage({message: "You need to specify the new starting, ending date and new starting and anding hours."}).toObject())
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify the new starting, ending date and new starting and ending hours."}).toObject())
         return;
     }
     const serverResponse = await request(AccessMicroserviceURL).get('/utility/verifyPrivileges_LOW').query({ email: req.body.email_executor});
@@ -385,14 +390,14 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
             res.status(200).send(new proto.BasicMessage({message: "Successfully changed time to lesson"}).toObject())
             return;
         }
-        res.status(500).send(new proto.BasicMessage({ message: "Internal server error" }).toObject())
+        res.status(500).send(new proto.BasicMessage({ message: "There was an error while changing hours to the lesson." }).toObject())
         return;
     }
 
     //se non c'è, devo prendere le lezioni che comprendono il periodo
     //se è presente una lezione all'interno del periodo specificato, do errore perchè le inner lessons non sono gestite
     if(await queryAsk.verify_InnerLesson(lesson, req.body.nuovaInizioData.toString(), req.body.nuovaFineData.toString())) {
-        res.status(400).send(new proto.BasicMessage({message: "There is already a lesson contained in the period you specified. Please change or remove it"}).toObject())
+        res.status(400).send(new proto.BasicMessage({message: "There is a lesson contained in the period you specified. Please change or remove it"}).toObject())
         return;
     }
 
@@ -417,7 +422,7 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
         const ISBNsOfLessonsToBeChanged: string[] = await queryAsk.get_BooksISBN_OfLesson(lesson)
         //modifico la data e la metto che termina il giorno che inizia quella nuova
         if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
-            res.status(500).send(new proto.BasicMessage({message: "There was an error while changing the time."}).toObject())
+            res.status(500).send(new proto.BasicMessage({message: "There was an error while changing hours to the lesson."}).toObject())
             return;
         }
         
@@ -448,13 +453,13 @@ router.post('/hoursOfLesson', async (req:{body: proto.ChangeLessonHours}, res) =
     //sposto la 1° lezione
     lesson = await queryAsk.get_Lesson_Information(IDLessons1[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson, lesson.Data_Inizio, req.body.nuovaInizioData)) {
-        res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
+        res.status(500).send(new proto.BasicMessage({message: "There was an error while changing hours to the lesson."}).toObject())
         return;
     }
     //sposto la 2° lezione
     const lesson2: Lesson.Lesson = await queryAsk.get_Lesson_Information(IDLessons2[0])
     if(!await queryAsk.change_Lezione_DataPeriod(lesson2, req.body.nuovaFineData, lesson2.Data_Fine)) {
-        res.status(500).send(new proto.BasicMessage({message: "There was an error while adding the books."}).toObject())
+        res.status(500).send(new proto.BasicMessage({message: "There was an error while changing hours to the lesson."}).toObject())
         return;
     }
 

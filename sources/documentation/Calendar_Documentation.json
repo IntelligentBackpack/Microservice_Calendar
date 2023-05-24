@@ -1,0 +1,1983 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Calendar microservice",
+    "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
+    "version": "1.0.0"
+  },
+  "externalDocs": {
+    "description": "GitHub page",
+    "url": "https://github.com/IntelligentBackpack/Microservice_Calendar"
+  },
+  "servers": [
+    {
+      "url": "https://calendarmicroservice.azurewebsites.net"
+    }
+  ],
+  "tags": [
+    {
+      "name": "create",
+      "description": "Let you create lessons and calendar"
+    },
+    {
+      "name": "delete",
+      "description": "Let you delete lessons from the system"
+    },
+    {
+      "name": "modify",
+      "description": "Let you mofidy lessons informations"
+    },
+    {
+      "name": "utility",
+      "description": "Let you get lessons informations"
+    }
+  ],
+  "paths": {
+    "/create/calendar/": {
+      "put": {
+        "tags": [
+          "create"
+        ],
+        "summary": "Create a calendar in the system",
+        "requestBody": {
+          "content": {
+            "application/protobuf.Calendar": {
+              "schema": {
+                "$ref": "#/components/schemas/Calendar"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "Anno_Scolastico": "string",
+                    "Istituto": "integer",
+                    "Classe": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Calendar created successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "Syntax error. Require Anno_Scolastico, Istituto and Classe fields."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Calendar already exists",
+                    "value": {
+                      "message": "Calendar with those data already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for creating a calendar."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create/lesson/": {
+      "put": {
+        "tags": [
+          "create"
+        ],
+        "summary": "Create a lesson in the system",
+        "requestBody": {
+          "content": {
+            "application/protobuf.Lesson": {
+              "schema": {
+                "$ref": "#/components/schemas/Lesson"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "protobuf.Lesson"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lesson created successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Calendar not existing",
+                    "value": {
+                      "message": "The ID of the calendar passed does not exists."
+                    }
+                  },
+                  "messageReturn3": {
+                    "summary": "Materia not existing",
+                    "value": {
+                      "message": "The ID of the materia passed does not exists."
+                    }
+                  },
+                  "messageReturn4": {
+                    "summary": "Lesson overlap",
+                    "value": {
+                      "message": "The lesson overlap another period of time."
+                    }
+                  },
+                  "messageReturn5": {
+                    "summary": "Lesson exists",
+                    "value": {
+                      "message": "The same lesson already exists"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for creating a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/create/bookForLesson/": {
+      "put": {
+        "tags": [
+          "create"
+        ],
+        "summary": "Add a book to a lesson",
+        "requestBody": {
+          "content": {
+            "application/protobuf.BooksForLesson": {
+              "schema": {
+                "$ref": "#/components/schemas/BooksForLesson"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "ISBNs": "string[]"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Books successfully added for the lesson"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for adding a book to a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/remove/lesson/": {
+      "delete": {
+        "tags": [
+          "delete"
+        ],
+        "summary": "delete a lesson lesson",
+        "requestBody": {
+          "content": {
+            "application/protobuf.LessonActions": {
+              "schema": {
+                "$ref": "#/components/schemas/LessonActions"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lesson deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/remove/bookForLesson/": {
+      "delete": {
+        "tags": [
+          "delete"
+        ],
+        "summary": "delete books assigned to a lesson",
+        "requestBody": {
+          "content": {
+            "application/protobuf.BooksForLesson": {
+              "schema": {
+                "$ref": "#/components/schemas/BooksForLesson"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "ISBNs": "string[]"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Book successfully removed from the lesson"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "No ISBNs passed"
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for removing a book of a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/remove/lessonsOfProfessor/everywhere/": {
+      "delete": {
+        "tags": [
+          "delete"
+        ],
+        "summary": "delete all lessons of a professor in all calendars",
+        "parameters": [
+          {
+            "name": "email_executor",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "professor",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lessons deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "No ISBNs passed"
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify a professor."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/remove/lessonsOfProfessor/calendar/ID": {
+      "delete": {
+        "tags": [
+          "delete"
+        ],
+        "summary": "delete all lessons of a professor in a calendar, passed by ID",
+        "requestBody": {
+          "content": {
+            "application/protobuf.DeleteLessonsOfProfessor": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteLessonsOfProfessor"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "professor": "Lesson",
+                    "CalendarID": "profotbuf.CalendarID"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lessons deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/remove/lessonsOfProfessor/calendar/reference": {
+      "delete": {
+        "tags": [
+          "delete"
+        ],
+        "summary": "delete all lessons of a professor in a calendar, passed by istituto name, city name, class and year",
+        "requestBody": {
+          "content": {
+            "application/protobuf.DeleteLessonsOfProfessor": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteLessonsOfProfessor"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "professor": "Lesson",
+                    "CalendarExplicit": "profotbuf.CalendarExplicit"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lessons deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No professor passed",
+                    "value": {
+                      "message": "You need to specify a professor."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/modify/lessonTimePeriod/": {
+      "post": {
+        "tags": [
+          "modify"
+        ],
+        "summary": "Change starting/ending date of a lesson",
+        "requestBody": {
+          "content": {
+            "application/protobuf.ChangeLessonPeriodDate": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeLessonPeriodDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "nuovaInizioData": "string",
+                    "nuovaFineData": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lesson deleted successfully"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify the new starting and ending date."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "No match found",
+                    "value": {
+                      "message": "Unable to change the date of the lesson"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/modify/bookForTimePeriod/": {
+      "post": {
+        "tags": [
+          "modify"
+        ],
+        "summary": "Change the books of a lesson in a determinated period of time",
+        "requestBody": {
+          "content": {
+            "application/protobuf.ChangeLessonBookPeriodDate": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeLessonBookPeriodDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "ISBNs": "string[]",
+                    "nuovaInizioData": "string",
+                    "nuovaFineData": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Books changed successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify the new starting and ending date."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Inner lesson",
+                    "value": {
+                      "message": "There is a lesson contained in the period you specified. Please change or remove it"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "There was an error while adding the books."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/modify/lessonAbsense/": {
+      "post": {
+        "tags": [
+          "modify"
+        ],
+        "summary": "Change the lesson as absense in a determinate period of time",
+        "requestBody": {
+          "content": {
+            "application/protobuf.ChangeLessonPeriodDate": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeLessonPeriodDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "nuovaInizioData": "string",
+                    "nuovaFineData": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Lesson set as absence successfully."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify the new starting and ending date."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Inner lesson",
+                    "value": {
+                      "message": "There is a lesson contained in the period you specified. Please change or remove it"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "There was an error while changing the lesson"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/modify/dayOfLesson/": {
+      "post": {
+        "tags": [
+          "modify"
+        ],
+        "summary": "Change the day of the lesson in a determinate period of time",
+        "requestBody": {
+          "content": {
+            "application/protobuf.ChangeLessonDay": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeLessonDay"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "nuovoGiorno": "string",
+                    "nuovaInizioData": "string",
+                    "nuovaFineData": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Successfully changed date to lesson"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify the new starting, ending date and the new day."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Inner lesson",
+                    "value": {
+                      "message": "There is a lesson contained in the period you specified. Please change or remove it"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "There was an error while changing the day"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/modify/hoursOfLesson/": {
+      "post": {
+        "tags": [
+          "modify"
+        ],
+        "summary": "Change the hours of the lesson in a determinate period of time",
+        "requestBody": {
+          "content": {
+            "application/protobuf.ChangeLessonHours": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangeLessonHours"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "email_executor": "string",
+                    "lesson": "Lesson",
+                    "nuovoGiorno": "string",
+                    "nuovaInizioData": "string",
+                    "nuovaFineData": "string",
+                    "nuovaOraInizio": "string",
+                    "nuovaOraFine": "string"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "Successfully changed time to lesson"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify the new starting, ending date and new starting and ending hours."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Inner lesson",
+                    "value": {
+                      "message": "There is a lesson contained in the period you specified. Please change or remove it"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No privileges",
+                    "value": {
+                      "message": "No privileges for deleting a lesson."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Internal server error",
+                    "value": {
+                      "message": "There was an error while changing hours to the lesson"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/getProfessorInformations/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all professor informations",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.UserInformations": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInformations"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "email": "email",
+                      "classes": "string[]",
+                      "subjects": "string[]",
+                      "institutes": "string[]"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify an email."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Not existing",
+                    "value": {
+                      "message": "The professor specified does not exists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/getStudentInformations/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all student informations",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.UserInformations": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInformations"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "email": "email",
+                      "classes": "string[]",
+                      "subjects": "string[]"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Client errors",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Wrong request",
+                    "value": {
+                      "message": "You need to specify an email."
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Not existing",
+                    "value": {
+                      "message": "The student specified does not exists"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/date/ID/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all lessons IDs in a date given the calendar ID",
+        "requestBody": {
+          "content": {
+            "application/protobuf.LessonInDate": {
+              "schema": {
+                "$ref": "#/components/schemas/LessonInDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "date": "string",
+                    "giorno": "string",
+                    "CalendarID": "protobuf.CalendarID"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.Lessons": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lessons"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "Lessons": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/date/Reference/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all lessons IDs in a date given the calendar informations",
+        "requestBody": {
+          "content": {
+            "application/protobuf.LessonInDate": {
+              "schema": {
+                "$ref": "#/components/schemas/LessonInDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "date": "string",
+                    "giorno": "string",
+                    "CalendarExplicit": "protobuf.CalendarExplicit"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.Lessons": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lessons"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "Lessons": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/booksForDate/ID/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all books ISBNs in a date given the calendar ID",
+        "requestBody": {
+          "content": {
+            "application/protobuf.LessonInDate": {
+              "schema": {
+                "$ref": "#/components/schemas/LessonInDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "date": "string",
+                    "giorno": "string",
+                    "CalendarID": "protobuf.CalendarID"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message2": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/booksForDate/Reference/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all books ISBNs in a date given the calendar informations",
+        "requestBody": {
+          "content": {
+            "application/protobuf.LessonInDate": {
+              "schema": {
+                "$ref": "#/components/schemas/LessonInDate"
+              },
+              "examples": {
+                "messageReturn": {
+                  "summary": "Input data",
+                  "value": {
+                    "date": "string",
+                    "giorno": "string",
+                    "CalendarExplicit": "protobuf.CalendarExplicit"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message2": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BasicMessage": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          },
+          "message2": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "Calendar": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "Anno_Scolastico": {
+            "type": "string"
+          },
+          "Istituto": {
+            "type": "integer"
+          },
+          "Classe": {
+            "type": "string"
+          },
+          "ID": {
+            "type": "integer"
+          }
+        }
+      },
+      "LessonActions": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "lesson": {
+            "type": "object"
+          }
+        }
+      },
+      "Lesson": {
+        "type": "object",
+        "properties": {
+          "Nome_lezione": {
+            "type": "string"
+          },
+          "Materia": {
+            "type": "integer"
+          },
+          "Professore": {
+            "type": "string"
+          },
+          "Ora_inizio": {
+            "type": "string"
+          },
+          "Ora_fine": {
+            "type": "string"
+          },
+          "Data_Inizio": {
+            "type": "string"
+          },
+          "Data_Fine": {
+            "type": "string"
+          },
+          "Giorno": {
+            "type": "string"
+          },
+          "ID_Calendario": {
+            "type": "integer"
+          }
+        }
+      },
+      "BooksForLesson": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "lesson": {
+            "type": "object"
+          },
+          "ISBNs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "DeleteLessonsOfProfessor": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "professor": {
+            "type": "integer"
+          },
+          "CalendarID": {
+            "type": "object"
+          },
+          "CalendarExplicit": {
+            "type": "object"
+          }
+        }
+      },
+      "ChangeLessonPeriodDate": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "lesson": {
+            "type": "object"
+          },
+          "nuovaInizioData": {
+            "type": "string"
+          },
+          "nuovaFineData": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeLessonBookPeriodDate": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "lesson": {
+            "type": "object"
+          },
+          "ISBNs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nuovaInizioData": {
+            "type": "string"
+          },
+          "nuovaFineData": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeLessonDay": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "lesson": {
+            "type": "object"
+          },
+          "nuovoGiorno": {
+            "type": "string"
+          },
+          "nuovaInizioData": {
+            "type": "string"
+          },
+          "nuovaFineData": {
+            "type": "string"
+          }
+        }
+      },
+      "ChangeLessonHours": {
+        "type": "object",
+        "properties": {
+          "email_executor": {
+            "type": "string"
+          },
+          "lesson": {
+            "type": "object"
+          },
+          "nuovaInizioData": {
+            "type": "string"
+          },
+          "nuovaFineData": {
+            "type": "string"
+          },
+          "nuovaOraInizio": {
+            "type": "string"
+          },
+          "nuovaOraFine": {
+            "type": "string"
+          }
+        }
+      },
+      "UserInformations": {
+        "type": "object",
+        "properties": {
+          "email_user": {
+            "type": "string"
+          },
+          "classes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "institutes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "LessonInDate": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "giorno": {
+            "type": "integer"
+          },
+          "CalendarID": {
+            "type": "object"
+          },
+          "CalendarExplicit": {
+            "type": "object"
+          }
+        }
+      },
+      "Lessons": {
+        "type": "object",
+        "properties": {
+          "Lessons": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    }
+  }
+}

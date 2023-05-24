@@ -18,6 +18,12 @@ router.get('/getProfessorInformations', async (req, res) => {
         return;
     }
 
+    var serverResponse = await request(AccessMicroserviceURL).get('/utility/emailExists').query({ email: req.query.email.toString()});
+    if(serverResponse.statusCode != 200) {
+        res.status(400).send(new proto.BasicMessage({message: "The professor specified does not exists"}).toObject())
+        return;
+    }
+
     const classes = await queryAsk.get_Classes_OfProfessor(req.query.email.toString());
     const subjects = await queryAsk.get_Subjects_OfProfessor(req.query.email.toString());
 
@@ -49,7 +55,7 @@ router.get('/getStudentInformations', async (req, res) => {
 
 });
 
-router.get('/lessons/today/ID', async (req: {body: proto.LessonInDate}, res) => {
+router.get('/lessons/date/ID', async (req: {body: proto.LessonInDate}, res) => {
     const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarID.anno, req.body.CalendarID.istituto, req.body.CalendarID.classe)
 
     var lessons: proto.Lesson[] = [];
@@ -63,7 +69,7 @@ router.get('/lessons/today/ID', async (req: {body: proto.LessonInDate}, res) => 
 
 });
 
-router.get('/lessons/today/Reference', async (req: {body: proto.LessonInDate}, res) => {
+router.get('/lessons/date/Reference', async (req: {body: proto.LessonInDate}, res) => {
     var serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({ istitutoNome: req.body.CalendarExplicit.nomeIstituto, istitutoCitta: req.body.CalendarExplicit.nomeCitta});
     const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarExplicit.anno, serverResponse.body.message, req.body.CalendarExplicit.classe)
     var lessons: proto.Lesson[] = [];
