@@ -124,7 +124,6 @@ export async function create_BooksForLesson(ID_Lezione: number, ISBNs: string[])
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         for(var ISBN of ISBNs) {
-            console.log("adding " + ISBN)
             await poolConnection.request().query("If Not Exists(select * from LibroPerLezione where ID_lezione=" + ID_Lezione + " AND ISBN='"+ ISBN + "') Begin Insert into LibroPerLezione values ("+ ID_Lezione + ", '" + ISBN + "') End"); //execute the query
         }
         poolConnection.close(); //close connection with database
@@ -297,12 +296,12 @@ export async function get_LessonsID_BetweenDate(lesson: Lesson.Lesson, dataInter
     return ID;
 }
 
-export async function get_Classes_OfProfessor(Professore: string): Promise<string[]> {
+export async function get_Classes_OfProfessor(Professore: string, Year: string): Promise<string[]> {
     var classes: string[] = [];
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select DISTINCT Calendario.Classe from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
+                                        .query("select DISTINCT Calendario.Classe from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Calendario.Anno_Scolastico = '" + Year + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
@@ -314,12 +313,12 @@ export async function get_Classes_OfProfessor(Professore: string): Promise<strin
     return classes;
 }
 
-export async function get_Subjects_OfProfessor(Professore: string): Promise<string[]> {
+export async function get_Subjects_OfProfessor(Professore: string, Year: string): Promise<string[]> {
     var subjects: string[] = [];
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select DISTINCT Materia.Nome from Lezione, Materia where Lezione.Professore = '" + Professore + "' AND Lezione.Materia = Materia.ID AND Lezione.Materia > 0"); //execute the query
+                                        .query("select DISTINCT Materia.Nome from Calendario, Lezione, Materia where Lezione.Professore = '" + Professore + "' AND Calendario.Anno_Scolastico = '" + Year + "' AND Lezione.Materia = Materia.ID AND Lezione.Materia > 0 AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
@@ -331,12 +330,12 @@ export async function get_Subjects_OfProfessor(Professore: string): Promise<stri
     return subjects;
 }
 
-export async function get_Institutes_OfProfessor(Professore: string): Promise<number[]> {
+export async function get_Institutes_OfProfessor(Professore: string, Year: string): Promise<number[]> {
     var institutes: number[] = [];
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-                                        .query("select DISTINCT Calendario.Istituto from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
+                                        .query("select DISTINCT Calendario.Istituto from Lezione, Calendario where Lezione.Professore = '" + Professore + "' AND Calendario.Anno_Scolastico = '" + Year + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
@@ -464,7 +463,70 @@ export async function get_Books_InDate(ID_Calendario: number, data: string, Gior
     return books;
 }
 
+export async function get_StudentLessons_InYear(ID_Calendario: string, Classe: string, IstitutoID: number): Promise<Lesson.Lesson[]> {
+    var lessons: Lesson.Lesson[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+            .query("select * from Calendario, Lezione where Calendario.Classe = '" + Classe + "' AND Calendario.Istituto = " + IstitutoID + " AND Calendario.ID = '" + ID_Calendario + "' AND Calendario.ID = Lezione.ID_Calendario Order By Lezione.Data_Inizio"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            const OraInizio: string[] = (new Date(row.Ora_inizio).toISOString().split('T')[1]).split(':')
+            const OraFine: string[] = (new Date(row.Ora_fine).toISOString().split('T')[1]).split(':')
+            
+            row.Ora_inizio = OraInizio[0]+":"+OraInizio[1]
+            row.Ora_fine = OraFine[0]+":"+OraFine[1]
+            row.Data_Inizio = new Date(row.Data_Inizio).toISOString().split('T')[0]
+            row.Data_Fine = new Date(row.Data_Fine).toISOString().split('T')[0]
+            lessons.push(Lesson.assignVals_DB(row))            
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return lessons;
+}
 
+export async function get_ProfessorLessons_InYear(annoCalendario: string, emailProfessore: string): Promise<Lesson.Lesson[]> {
+    var lessons: Lesson.Lesson[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+            .query("select * from Calendario, Lezione where Lezione.Professore = '"+ emailProfessore +"' AND Calendario.Anno_Scolastico = '" + annoCalendario + "' AND Calendario.ID = Lezione.ID_Calendario Order By Lezione.Data_Inizio"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            const OraInizio: string[] = (new Date(row.Ora_inizio).toISOString().split('T')[1]).split(':')
+            const OraFine: string[] = (new Date(row.Ora_fine).toISOString().split('T')[1]).split(':')
+            
+            row.Ora_inizio = OraInizio[0]+":"+OraInizio[1]
+            row.Ora_fine = OraFine[0]+":"+OraFine[1]
+            row.Data_Inizio = new Date(row.Data_Inizio).toISOString().split('T')[0]
+            row.Data_Fine = new Date(row.Data_Fine).toISOString().split('T')[0]
+            lessons.push(Lesson.assignVals_DB(row))            
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return lessons;
+}
+
+export async function get_AllYears_InCalendar(): Promise<string[]> {
+    var years: string[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+            .query("select DISTINCT Anno_Scolastico from Calendario"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            years.push(row.Anno_Scolastico)            
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return years;
+}
 
 
 

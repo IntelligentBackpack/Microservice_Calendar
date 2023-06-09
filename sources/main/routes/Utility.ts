@@ -3,7 +3,6 @@ import { Router } from 'express';
 
 import * as queryAsk from '../queries';
 import * as protoCalendar from '../generated/calendar'
-import * as protoAccess from '../generated/access'
 import proto = protoCalendar.calendar
 import * as Lesson from '../interfaces/Lesson';
 
@@ -13,8 +12,8 @@ export default router;
 const AccessMicroserviceURL:string = "https://accessmicroservice.azurewebsites.net"
 
 router.get('/getProfessorInformations', async (req, res) => {
-    if(req.query.email == undefined) {
-        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email."}).toObject())
+    if(req.query.email == undefined || req.query.year == undefined)  {
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify an emai and year."}).toObject())
         return;
     }
 
@@ -24,10 +23,10 @@ router.get('/getProfessorInformations', async (req, res) => {
         return;
     }
 
-    const classes = await queryAsk.get_Classes_OfProfessor(req.query.email.toString());
-    const subjects = await queryAsk.get_Subjects_OfProfessor(req.query.email.toString());
+    const classes = await queryAsk.get_Classes_OfProfessor(req.query.email.toString(), req.query.year.toString());
+    const subjects = await queryAsk.get_Subjects_OfProfessor(req.query.email.toString(), req.query.year.toString());
 
-    const institutes = await queryAsk.get_Institutes_OfProfessor(req.query.email.toString())
+    const institutes = await queryAsk.get_Institutes_OfProfessor(req.query.email.toString(), req.query.year.toString())
     var institutesName: string[] = []
     for(var val of institutes) {
         const serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istituto').query({id: val})
@@ -113,6 +112,62 @@ router.get('/lessons/booksForDate/Reference', async (req: {body: proto.LessonInD
 });
 
 
+
+router.get('/lessons/Student', async (req, res) => {
+    if(req.query.email == undefined || req.query.year == undefined ) {
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email and an anno field."}).toObject())
+        return;
+    }
+
+    var serverResponse = await request(AccessMicroserviceURL).get('/utility/emailExists').query({ email: req.query.email.toString()});
+    if(serverResponse.statusCode != 200) {
+        res.status(400).send(new proto.BasicMessage({message: "The student specified does not exists"}).toObject())
+        return;
+    }
+    const classe = serverResponse.body.classe;
+    const calendarID = await queryAsk.get_Calendar_ID(req.query.year.toString(), +serverResponse.body.istituto.ID, classe)
+
+    var lessons: proto.Lesson[] = [];
+    //generate all the proto required
+    console.log(calendarID + " " + classe + " " + serverResponse.body.istituto.ID)
+    const allLessonsOfDate = await queryAsk.get_StudentLessons_InYear(calendarID.toString(), classe, +serverResponse.body.istituto.ID)
+    for(var i = 0; i < allLessonsOfDate.length; i++) {
+        lessons.push(Lesson.generate_protoLesson(allLessonsOfDate[i]))
+    }
+
+    res.status(200).send(new proto.Lessons({Lessons: lessons}).toObject())
+});
+
+router.get('/lessons/Professor', async (req, res) => {
+    if(req.query.email == undefined || req.query.year == undefined ) {
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email and an anno field."}).toObject())
+        return;
+    }
+
+    var serverResponse = await request(AccessMicroserviceURL).get('/utility/emailExists').query({ email: req.query.email.toString()});
+    if(serverResponse.statusCode != 200) {
+        res.status(400).send(new proto.BasicMessage({message: "The professor specified does not exists"}).toObject())
+        return;
+    }
+    var lessons: proto.Lesson[] = [];
+    //generate all the proto required
+    const allLessonsOfDate = await queryAsk.get_ProfessorLessons_InYear(req.query.year.toString(), req.query.email.toString())
+    for(var i = 0; i < allLessonsOfDate.length; i++) {
+        lessons.push(Lesson.generate_protoLesson(allLessonsOfDate[i]))
+    }
+
+    res.status(200).send(new proto.Lessons({Lessons: lessons}).toObject())
+});
+
+router.get('/booksforLesson', async (req: {body: proto.Lesson}, res) => {
+    const ISBNs: string[] = await queryAsk.get_BooksISBN_OfLesson(Lesson.assignVals_JSON(req.body))
+    res.status(200).send(new proto.BasicMessage({message2:ISBNs}).toObject())
+});
+
+router.get('/getAllYears', async (req, res) => {
+    const years: string[] = await queryAsk.get_AllYears_InCalendar()
+    res.status(200).send(new proto.BasicMessage({message2:years}).toObject())
+});
 
 
 router.post('/changeEmail', async (req, res) => {
