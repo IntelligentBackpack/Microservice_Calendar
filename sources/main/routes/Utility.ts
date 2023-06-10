@@ -115,7 +115,7 @@ router.get('/lessons/booksForDate/Reference', async (req: {body: proto.LessonInD
 
 router.get('/lessons/Student', async (req, res) => {
     if(req.query.email == undefined || req.query.year == undefined ) {
-        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email and an anno field."}).toObject())
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email and an year field."}).toObject())
         return;
     }
 
@@ -129,7 +129,6 @@ router.get('/lessons/Student', async (req, res) => {
 
     var lessons: proto.Lesson[] = [];
     //generate all the proto required
-    console.log(calendarID + " " + classe + " " + serverResponse.body.istituto.ID)
     const allLessonsOfDate = await queryAsk.get_StudentLessons_InYear(calendarID.toString(), classe, +serverResponse.body.istituto.ID)
     for(var i = 0; i < allLessonsOfDate.length; i++) {
         lessons.push(Lesson.generate_protoLesson(allLessonsOfDate[i]))
@@ -140,7 +139,7 @@ router.get('/lessons/Student', async (req, res) => {
 
 router.get('/lessons/Professor', async (req, res) => {
     if(req.query.email == undefined || req.query.year == undefined ) {
-        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email and an anno field."}).toObject())
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify an email and an year field."}).toObject())
         return;
     }
 

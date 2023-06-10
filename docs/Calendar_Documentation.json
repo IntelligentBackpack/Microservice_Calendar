@@ -1416,6 +1416,14 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -1544,7 +1552,7 @@
         "tags": [
           "utility"
         ],
-        "summary": "Get all lessons IDs in a date given the calendar ID",
+        "summary": "Get all the lessons that are present in a given date, using the Calendar ID",
         "requestBody": {
           "content": {
             "application/protobuf.LessonInDate": {
@@ -1591,7 +1599,7 @@
         "tags": [
           "utility"
         ],
-        "summary": "Get all lessons IDs in a date given the calendar informations",
+        "summary": "Get all the lessons that are present in a determinate date, using the calendar informations",
         "requestBody": {
           "content": {
             "application/protobuf.LessonInDate": {
@@ -1638,7 +1646,7 @@
         "tags": [
           "utility"
         ],
-        "summary": "Get all books ISBNs in a date given the calendar ID",
+        "summary": "Get all books ISBNs for the lessons presents in a determinate date, using the calendar ID",
         "requestBody": {
           "content": {
             "application/protobuf.LessonInDate": {
@@ -1718,6 +1726,211 @@
                     "summary": "Return data",
                     "value": {
                       "message2": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/Student/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all the lessons of a student in a determinate year",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.Lessons": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lessons"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "Lessons": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "The student specified doesn't exists",
+                    "value": {
+                      "message": "The student specified doesn't exists"
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Bad message format",
+                    "value": {
+                      "message": "You need to specify an email and an year field."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/Professor/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all the lessons of a professor in a determinate year, considering all institutes and classed that he have",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.Lessons": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lessons"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "Lessons": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "The professor specified doesn't exists",
+                    "value": {
+                      "message": "The professor specified doesn't exists"
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Bad message format",
+                    "value": {
+                      "message": "You need to specify an email and an year field."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/booksforLesson/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all the lessons of a professor in a determinate year, considering all institutes and classed that he have",
+        "requestBody": {
+          "content": {
+            "application/protobuf.Lesson": {
+              "schema": {
+                "$ref": "#/components/schemas/Lesson"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message2": "string[]"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/getAllYears/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all the years that are already presents in the calendar of all institutes",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message2": "string[]"
                     }
                   }
                 }
