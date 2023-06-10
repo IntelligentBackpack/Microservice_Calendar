@@ -14,28 +14,28 @@ const lesson = new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "
 
 describe('Testing creation route', function() {
     describe('Testing creating a lesson', function() {
-        it.skip('Should return an error 400 for bad message format', async() => {
+        it('Should return an error 400 for bad message format', async() => {
             const serverResponse = await request(app).put('/create/lesson').send(new proto.LessonActions({email_executor: "admin", lesson: new proto.Lesson({Nome_lezione: "", Materia: 1, Professore: "", Ora_inizio: "10:30", Ora_fine: "11:30", Giorno: "Giovedì", ID_Calendario: 3})}).toObject());
     
             expect(serverResponse.statusCode).toBe(400)
             expect(serverResponse.body.message).toBe("Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted.")
         });
 
-        it.skip('Should return an error 401 for no privileges', async() => {
+        it('Should return an error 401 for no privileges', async() => {
             const serverResponse = await request(app).put('/create/lesson').send(new proto.LessonActions({email_executor: "", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "admin", Ora_inizio: "10:30", Ora_fine: "11:30", Data_Inizio:'1000-02-02', Data_Fine:'1005-12-31', Giorno: "Giovedì", ID_Calendario: 3})}).toObject());
     
             expect(serverResponse.statusCode).toBe(401)
             expect(serverResponse.body.message).toBe("No privileges for creating a lesson.")
         });
 
-        it.skip('Should return an error 400 for no subject', async() => {
+        it('Should return an error 400 for no subject', async() => {
             const serverResponse = await request(app).put('/create/lesson').send(new proto.LessonActions({email_executor: "", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1665489163, Professore: "admin", Ora_inizio: "10:30", Ora_fine: "11:30", Data_Inizio:'1000-02-02', Data_Fine:'1005-12-31', Giorno: "Giovedì", ID_Calendario: 3})}).toObject());
     
             expect(serverResponse.statusCode).toBe(400)
             expect(serverResponse.body.message).toBe("The ID of the materia passed does not exists.")
         });
         
-        it.skip('Should return an error 400 for no calendar', async() => {
+        it('Should return an error 400 for no calendar', async() => {
             const serverResponse = await request(app).put('/create/lesson').send(new proto.LessonActions({email_executor: "", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "admin", Ora_inizio: "10:30", Ora_fine: "11:30", Data_Inizio:'1000-02-02', Data_Fine:'1005-12-31', Giorno: "Giovedì", ID_Calendario: 9844651318})}).toObject());
     
             expect(serverResponse.statusCode).toBe(400)
@@ -51,14 +51,14 @@ describe('Testing creation route', function() {
     });
 
     describe('Testing creating a book for a lesson', function() {
-        it.skip('Should return an error 400 for bad message format', async() => {
+        it('Should return an error 400 for bad message format', async() => {
             const serverResponse = await request(app).put('/create/bookForLesson').send(new proto.BooksForLesson({email_executor: "admin", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "", Ora_inizio: "10:30:00", Ora_fine: "11:30:00", Giorno: "Giovedì", ID_Calendario: 3}), ISBNs: ["12345678901234567"]}).toObject());
     
             expect(serverResponse.statusCode).toBe(400)
             expect(serverResponse.body.message).toBe("Verify that values professore, ora inizio, ora fine, data inizio, data fine and giorno are inserted.")
         });
 
-        it.skip('Should return an error 401 for no privileges', async() => {
+        it('Should return an error 401 for no privileges', async() => {
             const serverResponse = await request(app).put('/create/bookForLesson').send(new proto.BooksForLesson({email_executor: "", lesson: new proto.Lesson({Nome_lezione: "test", Materia: 1, Professore: "professorNotExisstigd", Ora_inizio: "10:30:00", Ora_fine: "11:30:00", Data_Inizio:'1000-02-02', Data_Fine:'1005-12-31', Giorno: "Giovedì", ID_Calendario: 3}), ISBNs: ["12345678901234567"]}).toObject());
     
             expect(serverResponse.statusCode).toBe(401)
@@ -103,6 +103,18 @@ describe('Testing utility route', function() {
 
         it('get all books for a lesson', async() => {
             const serverResponse = await request(app).get('/utility/booksforLesson').send(lesson.toObject())
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+
+        it('get all the subjects', async() => {
+            const serverResponse = await request(app).get('/utility/getAllSubjects')
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+
+        it('get all the lessons of a calendar', async() => {
+            const serverResponse = await request(app).get('/utility/lessons').query({classe: "5C", year: "1000/1001", istitutoNome: "Istituto 1", istitutoCitta: "Città 1"})
             console.log(serverResponse.body)
             expect(serverResponse.statusCode).toBe(200)
         });

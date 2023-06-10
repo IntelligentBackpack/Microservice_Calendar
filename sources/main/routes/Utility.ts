@@ -168,6 +168,36 @@ router.get('/getAllYears', async (req, res) => {
     res.status(200).send(new proto.BasicMessage({message2:years}).toObject())
 });
 
+router.get('/getAllSubjects', async (req, res) => {
+    const names: string[] = await queryAsk.get_AllMaterie()
+    res.status(200).send(new proto.BasicMessage({message2:names}).toObject())
+});
+
+router.get('/lessons', async (req, res) => {
+    if(req.query.classe == undefined || req.query.year == undefined || req.query.istitutoNome == undefined || req.query.istitutoCitta == undefined) {
+        res.status(400).send(new proto.BasicMessage({message: "You need to specify an istitute, an year, an istitutoNome and an istitutoCitta field."}).toObject())
+        return;
+    }
+
+    const serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({istitutoNome: req.query.istitutoNome, istitutoCitta: req.query.istitutoCitta})
+    if(serverResponse.statusCode != 200) {
+        res.status(400).send(new proto.BasicMessage({message: "Cannot find the specified institute"}).toObject())
+        return;
+    }
+    const istitutoID = serverResponse.body.message
+
+    const calendarID = await queryAsk.get_Calendar_ID(req.query.year.toString(), +istitutoID, req.query.classe.toString())
+
+    var lessons: proto.Lesson[] = [];
+    //generate all the proto required
+    const allLessons = await queryAsk.get_AllLessons(calendarID)
+    for(var i = 0; i < allLessons.length; i++) {
+        lessons.push(Lesson.generate_protoLesson(allLessons[i]))
+    }
+
+    res.status(200).send(new proto.Lessons({Lessons: lessons}).toObject())
+});
+
 
 router.post('/changeEmail', async (req, res) => {
     if(req.query.oldEmail == undefined || req.query.nuovaEmail == undefined ) {

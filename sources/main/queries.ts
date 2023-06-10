@@ -528,6 +528,46 @@ export async function get_AllYears_InCalendar(): Promise<string[]> {
     return years;
 }
 
+export async function get_AllMaterie(): Promise<string[]> {
+    var names: string[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+            .query("select DISTINCT Nome from Materia"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            names.push(row.Nome)            
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return names;
+}
+
+export async function get_AllLessons(ID_Calendario: number): Promise<Lesson.Lesson[]> {
+    var lessons: Lesson.Lesson[] = []
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                                        .query("select * from Lezione where ID_Calendario="+ ID_Calendario+ " ORDER BY Data_Inizio"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            const OraInizio: string[] = (new Date(row.Ora_inizio).toISOString().split('T')[1]).split(':')
+            const OraFine: string[] = (new Date(row.Ora_fine).toISOString().split('T')[1]).split(':')
+            
+            row.Ora_inizio = OraInizio[0]+":"+OraInizio[1]
+            row.Ora_fine = OraFine[0]+":"+OraFine[1]
+            row.Data_Inizio = new Date(row.Data_Inizio).toISOString().split('T')[0]
+            row.Data_Fine = new Date(row.Data_Fine).toISOString().split('T')[0]
+            lessons.push(Lesson.assignVals_DB(row))
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return lessons;
+}
 
 
 

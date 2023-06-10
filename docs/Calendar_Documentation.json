@@ -3,7 +3,7 @@
   "info": {
     "title": "Calendar microservice",
     "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
-    "version": "1.0.0"
+    "version": "1.0.6"
   },
   "externalDocs": {
     "description": "GitHub page",
@@ -1931,6 +1931,120 @@
                     "summary": "Return data",
                     "value": {
                       "message2": "string[]"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/getAllSubjects/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all the subjects available",
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message2": "string[]"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/lessons/": {
+      "get": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get all the lessons in a determinated calendar",
+        "parameters": [
+          {
+            "name": "classe",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "istitutoNome",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "istitutioCitta",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.Lessons": {
+                "schema": {
+                  "$ref": "#/components/schemas/Lessons"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "Lessons": "object"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "No institute",
+                    "value": {
+                      "message": "Cannot find the specified institute"
+                    }
+                  },
+                  "messageReturn2": {
+                    "summary": "Bad message format",
+                    "value": {
+                      "message": "You need to specify an istitute, an year, an istitutoNome and an istitutoCitta field."
                     }
                   }
                 }
