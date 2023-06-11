@@ -5,6 +5,7 @@ import * as queryAsk from '../queries';
 import * as protoCalendar from '../generated/calendar'
 import proto = protoCalendar.calendar
 import * as Lesson from '../interfaces/Lesson';
+import * as Subject from '../interfaces/Subject'
 
 const router = Router();
 export default router;
@@ -169,8 +170,16 @@ router.get('/getAllYears', async (req, res) => {
 });
 
 router.get('/getAllSubjects', async (req, res) => {
-    const names: string[] = await queryAsk.get_AllMaterie()
-    res.status(200).send(new proto.BasicMessage({message2:names}).toObject())
+    const materie: Subject.Subject[] = await queryAsk.get_AllMaterie()
+
+
+    var subjectsDB: proto.Subject[] = [];
+    //generate all the proto required
+    for(var i = 0; i < materie.length; i++) {
+        subjectsDB.push(Subject.generate_protoSubject(materie[i]))
+    }
+
+    res.status(200).send(new proto.Subjects({subjects: subjectsDB}).toObject())
 });
 
 router.get('/lessons', async (req, res) => {

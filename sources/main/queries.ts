@@ -1,5 +1,8 @@
 import sql, { config } from 'mssql';
 import * as Lesson from './interfaces/Lesson';
+import * as Subject from './interfaces/Subject'
+
+
 
 const conf: config = {
     user: 'intelligentSystem', // better stored in an app setting such as process.env.DB_USER
@@ -528,16 +531,16 @@ export async function get_AllYears_InCalendar(): Promise<string[]> {
     return years;
 }
 
-export async function get_AllMaterie(): Promise<string[]> {
-    var names: string[] = []
+export async function get_AllMaterie(): Promise<Subject.Subject[]> {
+    var names: Subject.Subject[] = []
     try {
         var poolConnection = await sql.connect(conf); //connect to the database
         var resultSet:sql.IResult<any> = await poolConnection.request()
-            .query("select DISTINCT Nome from Materia"); //execute the query
+            .query("select DISTINCT * from Materia"); //execute the query
         poolConnection.close(); //close connection with database
         // ouput row contents from default record set
         resultSet.recordset.forEach(function(row: any) {
-            names.push(row.Nome)            
+            names.push(Subject.assignVals_DB(row))            
         });
     } catch (e: any) /* istanbul ignore next */ {
         console.error(e);
