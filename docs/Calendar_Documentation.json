@@ -3,7 +3,7 @@
   "info": {
     "title": "Calendar microservice",
     "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
-    "version": "1.0.6"
+    "version": "1.0.7"
   },
   "externalDocs": {
     "description": "GitHub page",
@@ -1950,15 +1950,15 @@
           "200": {
             "description": "Success",
             "content": {
-              "application/protobuf.BasicMessage": {
+              "application/protobuf.Subjects": {
                 "schema": {
-                  "$ref": "#/components/schemas/BasicMessage"
+                  "$ref": "#/components/schemas/Subjects"
                 },
                 "examples": {
                   "messageReturn": {
                     "summary": "Return data",
                     "value": {
-                      "message2": "string[]"
+                      "subjects": "object[]"
                     }
                   }
                 }
@@ -2298,6 +2298,17 @@
         "type": "object",
         "properties": {
           "Lessons": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "Subjects": {
+        "type": "object",
+        "properties": {
+          "ISBNs": {
             "type": "array",
             "items": {
               "type": "object"
