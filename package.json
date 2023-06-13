@@ -1,10 +1,10 @@
 {
   "name": "microservice_calendar",
-  "version": "1.0.1",
+  "version": "1.0.7",
   "description": "This microservice is used for handle the calendar functions. All these functions manage the informations about the lessons and the material needed for each of them",
   "main": "index.js",
   "scripts": {
-    "doc": "redoc-cli bundle -o ./sources/documentation/Microservice_Documentation.html ./sources/documentation/BookMicroservice.json",
+    "doc": "redoc-cli bundle -o ./docs/index.html ./docs/Calendar_Documentation.json",
     "build": "mkdirp ./sources/main/generated && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./CalendarCommunication ./CalendarCommunication/*.proto && protoc --ts_opt=esModuleInterop=true --ts_out=./sources/main/generated -I ./AccessCommunication ./AccessCommunication/*.proto && npx tsc",
     "start": "node sources/build/main/index.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q sources/build/main/index.js\"",
