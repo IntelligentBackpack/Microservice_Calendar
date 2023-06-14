@@ -102,7 +102,7 @@ describe('Testing utility route', function() {
         });
 
         it('get all books for a lesson', async() => {
-            const serverResponse = await request(app).get('/utility/booksforLesson').send(lesson.toObject())
+            const serverResponse = await request(app).post('/utility/booksforLesson').send(lesson.toObject())
             console.log(serverResponse.body)
             expect(serverResponse.statusCode).toBe(200)
         });

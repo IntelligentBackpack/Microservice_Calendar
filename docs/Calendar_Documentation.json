@@ -3,7 +3,7 @@
   "info": {
     "title": "Calendar microservice",
     "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
-    "version": "1.0.7"
+    "version": "1.0.8"
   },
   "externalDocs": {
     "description": "GitHub page",
@@ -1548,7 +1548,7 @@
       }
     },
     "/utility/lessons/date/ID/": {
-      "get": {
+      "post": {
         "tags": [
           "utility"
         ],
@@ -1595,7 +1595,7 @@
       }
     },
     "/utility/lessons/date/Reference/": {
-      "get": {
+      "post": {
         "tags": [
           "utility"
         ],
@@ -1642,7 +1642,7 @@
       }
     },
     "/utility/lessons/booksForDate/ID/": {
-      "get": {
+      "post": {
         "tags": [
           "utility"
         ],
@@ -1689,7 +1689,7 @@
       }
     },
     "/utility/lessons/booksForDate/Reference/": {
-      "get": {
+      "post": {
         "tags": [
           "utility"
         ],
