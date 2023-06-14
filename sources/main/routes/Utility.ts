@@ -55,7 +55,7 @@ router.get('/getStudentInformations', async (req, res) => {
 
 });
 
-router.get('/lessons/date/ID', async (req: {body: proto.LessonInDate}, res) => {
+router.post('/lessons/date/ID', async (req: {body: proto.LessonInDate}, res) => {
     const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarID.anno, req.body.CalendarID.istituto, req.body.CalendarID.classe)
 
     var lessons: proto.Lesson[] = [];
@@ -69,7 +69,7 @@ router.get('/lessons/date/ID', async (req: {body: proto.LessonInDate}, res) => {
 
 });
 
-router.get('/lessons/date/Reference', async (req: {body: proto.LessonInDate}, res) => {
+router.post('/lessons/date/Reference', async (req: {body: proto.LessonInDate}, res) => {
     var serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({ istitutoNome: req.body.CalendarExplicit.nomeIstituto, istitutoCitta: req.body.CalendarExplicit.nomeCitta});
     const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarExplicit.anno, serverResponse.body.message, req.body.CalendarExplicit.classe)
     var lessons: proto.Lesson[] = [];
@@ -83,7 +83,7 @@ router.get('/lessons/date/Reference', async (req: {body: proto.LessonInDate}, re
 
 });
 
-router.get('/lessons/booksForDate/ID', async (req: {body: proto.LessonInDate}, res) => {
+router.post('/lessons/booksForDate/ID', async (req: {body: proto.LessonInDate}, res) => {
     const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarID.anno, req.body.CalendarID.istituto, req.body.CalendarID.classe)
 
     var ISBNs: string[] = [];
@@ -97,7 +97,7 @@ router.get('/lessons/booksForDate/ID', async (req: {body: proto.LessonInDate}, r
 
 });
 
-router.get('/lessons/booksForDate/Reference', async (req: {body: proto.LessonInDate}, res) => {
+router.post('/lessons/booksForDate/Reference', async (req: {body: proto.LessonInDate}, res) => {
     var serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istitutoID').query({ istitutoNome: req.body.CalendarExplicit.nomeIstituto, istitutoCitta: req.body.CalendarExplicit.nomeCitta});
     const calendarID = await queryAsk.get_Calendar_ID(req.body.CalendarExplicit.anno, serverResponse.body.message, req.body.CalendarExplicit.classe)
     
@@ -159,7 +159,7 @@ router.get('/lessons/Professor', async (req, res) => {
     res.status(200).send(new proto.Lessons({Lessons: lessons}).toObject())
 });
 
-router.get('/booksforLesson', async (req: {body: proto.Lesson}, res) => {
+router.post('/booksforLesson', async (req: {body: proto.Lesson}, res) => {
     const ISBNs: string[] = await queryAsk.get_BooksISBN_OfLesson(Lesson.assignVals_JSON(req.body))
     res.status(200).send(new proto.BasicMessage({message2:ISBNs}).toObject())
 });
