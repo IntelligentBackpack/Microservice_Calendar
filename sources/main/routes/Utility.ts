@@ -182,6 +182,11 @@ router.get('/getAllSubjects', async (req, res) => {
     res.status(200).send(new proto.Subjects({subjects: subjectsDB}).toObject())
 });
 
+router.post('/getClass_ByLesson', async (req: {body: proto.Lesson}, res) => {
+    const classe: string = await queryAsk.getClass_ByLesson(req.body)
+    res.status(200).send(new proto.BasicMessage({message: classe}).toObject())
+});
+
 router.get('/lessons', async (req, res) => {
     if(req.query.classe == undefined || req.query.year == undefined || req.query.istitutoNome == undefined || req.query.istitutoCitta == undefined) {
         res.status(400).send(new proto.BasicMessage({message: "You need to specify an istitute, an year, an istitutoNome and an istitutoCitta field."}).toObject())

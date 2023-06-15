@@ -3,7 +3,7 @@
   "info": {
     "title": "Calendar microservice",
     "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
-    "version": "1.0.8"
+    "version": "1.0.9"
   },
   "externalDocs": {
     "description": "GitHub page",
@@ -2045,6 +2045,44 @@
                     "summary": "Bad message format",
                     "value": {
                       "message": "You need to specify an istitute, an year, an istitutoNome and an istitutoCitta field."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/utility/getClass_ByLesson/": {
+      "post": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get the class given a lesson",
+        "requestBody": {
+          "content": {
+            "application/protobuf.Lesson": {
+              "schema": {
+                "$ref": "#/components/schemas/Lesson"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "string"
                     }
                   }
                 }
