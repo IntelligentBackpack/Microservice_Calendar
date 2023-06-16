@@ -29,12 +29,14 @@ router.get('/getProfessorInformations', async (req, res) => {
 
     const institutes = await queryAsk.get_Institutes_OfProfessor(req.query.email.toString(), req.query.year.toString())
     var institutesName: string[] = []
+    var institutesCity: string[] = []
     for(var val of institutes) {
         const serverResponse = await request(AccessMicroserviceURL).get('/utility/get_istituto').query({id: val})
-        institutesName.push(serverResponse.body.IstitutoNome+" / "+serverResponse.body.IstitutoCitta)
+        institutesName.push(serverResponse.body.IstitutoNome)
+        institutesCity.push(serverResponse.body.IstitutoCitta)
     }
     
-    res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), classes: classes, subjects: subjects, insitutes: institutesName}).toObject())
+    res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), nome: serverResponse.body.nome, cognome: serverResponse.body.cognome, classes: classes, subjects: subjects, insitutesName: institutesName, insitutesCitta: institutesCity}).toObject())
 });
 
 router.get('/getStudentInformations', async (req, res) => {
@@ -51,7 +53,7 @@ router.get('/getStudentInformations', async (req, res) => {
     
     const calendarID = await queryAsk.get_Calendar_ID(req.query.year.toString(), +serverResponse.body.istituto.ID, classe)
     const materie = await queryAsk.get_Materie_OfStudent(calendarID);
-    res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), classes: classe, subjects: materie}).toObject())
+    res.status(200).send(new proto.UserInformations({email_user: req.query.email.toString(), nome: serverResponse.body.nome, cognome: serverResponse.body.cognome, classes: classe, subjects: materie, insitutesName: serverResponse.body.istituto.IstitutoNome, insitutesCitta: serverResponse.body.istituto.IstitutoCitta}).toObject())
 
 });
 
@@ -111,8 +113,6 @@ router.post('/lessons/booksForDate/Reference', async (req: {body: proto.LessonIn
     res.status(200).send(new proto.BasicMessage({message2: ISBNs}).toObject())
 
 });
-
-
 
 router.get('/lessons/Student', async (req, res) => {
     if(req.query.email == undefined || req.query.year == undefined ) {

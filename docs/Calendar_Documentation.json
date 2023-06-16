@@ -3,7 +3,7 @@
   "info": {
     "title": "Calendar microservice",
     "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
-    "version": "1.0.9"
+    "version": "1.0.10"
   },
   "externalDocs": {
     "description": "GitHub page",
@@ -1438,10 +1438,13 @@
                   "messageReturn": {
                     "summary": "Return data",
                     "value": {
-                      "email": "email",
+                      "email": "string",
+                      "nome": "string",
+                      "cognome": "string",
                       "classes": "string[]",
                       "subjects": "string[]",
-                      "institutes": "string[]"
+                      "institutesName": "string[]",
+                      "institutesCitta": "string[]"
                     }
                   }
                 }
@@ -1511,9 +1514,13 @@
                   "messageReturn": {
                     "summary": "Return data",
                     "value": {
-                      "email": "email",
-                      "classes": "string[]",
-                      "subjects": "string[]"
+                      "email": "string",
+                      "nome": "string",
+                      "cognome": "string",
+                      "classes": "string",
+                      "subjects": "string[]",
+                      "institutesName": "string",
+                      "institutesCitta": "string"
                     }
                   }
                 }
@@ -2295,6 +2302,12 @@
           "email_user": {
             "type": "string"
           },
+          "nome": {
+            "type": "string"
+          },
+          "cognome": {
+            "type": "string"
+          },
           "classes": {
             "type": "array",
             "items": {
@@ -2307,7 +2320,13 @@
               "type": "string"
             }
           },
-          "institutes": {
+          "institutesName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "institutesCitta": {
             "type": "array",
             "items": {
               "type": "string"

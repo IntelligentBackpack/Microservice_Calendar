@@ -77,52 +77,63 @@ describe('Testing creation route', function() {
 
 
 describe('Testing utility route', function() {
-    it('getting professor informations', async() => {
-        const serverResponse = await request(app).get('/utility/getProfessorInformations').query({email: "admin", year: "1000/1001"})
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
+    describe('Testing information methods', function() { 
+        it('getting professor informations', async() => {
+            const serverResponse = await request(app).get('/utility/getProfessorInformations').query({email: "admin", year: "1000/1001"})
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+    
+        it('getting student informations', async() => {
+            const serverResponse = await request(app).get('/utility/getStudentInformations').query({email: "admin", year: "1000/1001"})
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
     });
 
-    it('getting student informations', async() => {
-        const serverResponse = await request(app).get('/utility/getStudentInformations').query({email: "admin", year: "1000/1001"})
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
-    });
+    describe('Testing lessons gets informations', function() { 
+        it('get all the lessons of a student in a year', async() => {
+            const serverResponse = await request(app).get('/utility/lessons/Student').query({email: "admin", year: "1000/1001"})
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+        it('get all the lessons of a professor in a year', async() => {
+            const serverResponse = await request(app).get('/utility/lessons/Professor').query({email: "admin", year: "1000/1001"})
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
 
-    it('get all the lessons of a student in a year', async() => {
-        const serverResponse = await request(app).get('/utility/lessons/Student').query({email: "admin", year: "1000/1001"})
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
-    });
-    it('get all the lessons of a professor in a year', async() => {
-        const serverResponse = await request(app).get('/utility/lessons/Professor').query({email: "admin", year: "1000/1001"})
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
-    });
-
-    it('get all books for a lesson', async() => {
-        const serverResponse = await request(app).post('/utility/booksforLesson').send(lesson.toObject())
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
-    });
-
-    it('get all the subjects', async() => {
-        const serverResponse = await request(app).get('/utility/getAllSubjects')
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
-    });
-
-    it('get all the lessons of a calendar', async() => {
-        const serverResponse = await request(app).get('/utility/lessons').query({classe: "5C", year: "1000/1001", istitutoNome: "Istituto 1", istitutoCitta: "Città 1"})
-        console.log(serverResponse.body)
-        expect(serverResponse.statusCode).toBe(200)
-    });
-
-    it('get the class of a lesson', async() => {
+        it('get all books for a lesson', async() => {
+            const serverResponse = await request(app).post('/utility/booksforLesson').send(lesson.toObject())
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+        
+        it('get the class of a lesson', async() => {
         const serverResponse = await request(app).post('/utility/getClass_ByLesson').send(lesson.toObject())
         console.log(serverResponse.body)
         expect(serverResponse.statusCode).toBe(200)
+        });
     });
+
+    describe('Testing informations getters', function() { 
+        it('get all the subjects', async() => {
+            const serverResponse = await request(app).get('/utility/getAllSubjects')
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+
+        it('get all the lessons of a calendar', async() => {
+            const serverResponse = await request(app).get('/utility/lessons').query({classe: "5C", year: "1000/1001", istitutoNome: "Istituto 1", istitutoCitta: "Città 1"})
+            console.log(serverResponse.body)
+            expect(serverResponse.statusCode).toBe(200)
+        });
+    });
+
+
+
+
+
 });
 
 
