@@ -3,7 +3,7 @@
   "info": {
     "title": "Calendar microservice",
     "description": "This microservice is used to manage all the informations and processes about calendars, including creation of a new one and creation/modify of existing lessons ",
-    "version": "1.0.8"
+    "version": "1.0.10"
   },
   "externalDocs": {
     "description": "GitHub page",
@@ -1438,10 +1438,13 @@
                   "messageReturn": {
                     "summary": "Return data",
                     "value": {
-                      "email": "email",
+                      "email": "string",
+                      "nome": "string",
+                      "cognome": "string",
                       "classes": "string[]",
                       "subjects": "string[]",
-                      "institutes": "string[]"
+                      "institutesName": "string[]",
+                      "institutesCitta": "string[]"
                     }
                   }
                 }
@@ -1511,9 +1514,13 @@
                   "messageReturn": {
                     "summary": "Return data",
                     "value": {
-                      "email": "email",
-                      "classes": "string[]",
-                      "subjects": "string[]"
+                      "email": "string",
+                      "nome": "string",
+                      "cognome": "string",
+                      "classes": "string",
+                      "subjects": "string[]",
+                      "institutesName": "string",
+                      "institutesCitta": "string"
                     }
                   }
                 }
@@ -2053,6 +2060,44 @@
           }
         }
       }
+    },
+    "/utility/getClass_ByLesson/": {
+      "post": {
+        "tags": [
+          "utility"
+        ],
+        "summary": "Get the class given a lesson",
+        "requestBody": {
+          "content": {
+            "application/protobuf.Lesson": {
+              "schema": {
+                "$ref": "#/components/schemas/Lesson"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/protobuf.BasicMessage": {
+                "schema": {
+                  "$ref": "#/components/schemas/BasicMessage"
+                },
+                "examples": {
+                  "messageReturn": {
+                    "summary": "Return data",
+                    "value": {
+                      "message": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2257,6 +2302,12 @@
           "email_user": {
             "type": "string"
           },
+          "nome": {
+            "type": "string"
+          },
+          "cognome": {
+            "type": "string"
+          },
           "classes": {
             "type": "array",
             "items": {
@@ -2269,7 +2320,13 @@
               "type": "string"
             }
           },
-          "institutes": {
+          "institutesName": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "institutesCitta": {
             "type": "array",
             "items": {
               "type": "string"

@@ -77,19 +77,21 @@ describe('Testing creation route', function() {
 
 
 describe('Testing utility route', function() {
-    describe('Testing get informations of professor and student', function() {
+    describe('Testing information methods', function() { 
         it('getting professor informations', async() => {
             const serverResponse = await request(app).get('/utility/getProfessorInformations').query({email: "admin", year: "1000/1001"})
             console.log(serverResponse.body)
             expect(serverResponse.statusCode).toBe(200)
         });
-
+    
         it('getting student informations', async() => {
             const serverResponse = await request(app).get('/utility/getStudentInformations').query({email: "admin", year: "1000/1001"})
             console.log(serverResponse.body)
             expect(serverResponse.statusCode).toBe(200)
         });
+    });
 
+    describe('Testing lessons gets informations', function() { 
         it('get all the lessons of a student in a year', async() => {
             const serverResponse = await request(app).get('/utility/lessons/Student').query({email: "admin", year: "1000/1001"})
             console.log(serverResponse.body)
@@ -106,7 +108,15 @@ describe('Testing utility route', function() {
             console.log(serverResponse.body)
             expect(serverResponse.statusCode).toBe(200)
         });
+        
+        it('get the class of a lesson', async() => {
+        const serverResponse = await request(app).post('/utility/getClass_ByLesson').send(lesson.toObject())
+        console.log(serverResponse.body)
+        expect(serverResponse.statusCode).toBe(200)
+        });
+    });
 
+    describe('Testing informations getters', function() { 
         it('get all the subjects', async() => {
             const serverResponse = await request(app).get('/utility/getAllSubjects')
             console.log(serverResponse.body)
@@ -119,6 +129,11 @@ describe('Testing utility route', function() {
             expect(serverResponse.statusCode).toBe(200)
         });
     });
+
+
+
+
+
 });
 
 

@@ -573,6 +573,24 @@ export async function get_AllLessons(ID_Calendario: number): Promise<Lesson.Less
 }
 
 
+export async function getClass_ByLesson(lesson: Lesson.Lesson): Promise<string> {
+    var returnClass = ""
+    try {
+        var poolConnection = await sql.connect(conf); //connect to the database
+        var resultSet:sql.IResult<any> = await poolConnection.request()
+                        .query("select Calendario.Classe from Calendario, Lezione where Professore='" + lesson.Professore + "' AND Ora_inizio='" + lesson.Ora_inizio + "' AND Ora_fine='" + lesson.Ora_fine + "' AND Giorno='" + lesson.Giorno.toUpperCase() + "' AND Data_Inizio='" + lesson.Data_Inizio + "' AND Data_Fine='" + lesson.Data_Fine + "' AND Lezione.ID_Calendario = Calendario.ID"); //execute the query
+        poolConnection.close(); //close connection with database
+        // ouput row contents from default record set
+        resultSet.recordset.forEach(function(row: any) {
+            returnClass = row.Classe
+        });
+    } catch (e: any) /* istanbul ignore next */ {
+        console.error(e);
+    }
+    return returnClass;
+}
+
+
 
 
 
